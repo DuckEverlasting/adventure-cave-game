@@ -43,8 +43,7 @@ def initialize_mem():
         "save_dat": {}
     }
 
-def initialize(screen_to_use):
-    screen = screen_to_use
+def initialize(screen):
     initialize_state()
     mem = initialize_mem()
 
@@ -74,12 +73,19 @@ def initialize(screen_to_use):
 
     pause(3)
 
-    clear_screen()
+    screen.clear()
 
     pause()
 
 # Start of main loop
 def submit_input(command):
+    global item
+    global room
+    global mob
+    global player
+    global action
+    global mem
+
     # Player's turn
     
     # Parse command
@@ -120,7 +126,7 @@ def submit_input(command):
             if action_result and "load_game" in action_result:
                 mem = action_result["load_game"]
                 player_moved = True
-                clear_screen()
+                screen.clear()
         else:
             action_result = action[act].run(
                 command = command,

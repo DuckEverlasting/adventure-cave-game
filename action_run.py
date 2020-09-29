@@ -242,7 +242,7 @@ def run_load(screen, mem, loop=False, get_confirm=True):
     if not loop:
         saved_games = shelve.open('saved_games')
         if get_confirm:
-            confirm = player.screen.get_input('Load a saved game? (Type "y" to confirm)\n> ')
+            confirm = screen.get_input('Load a saved game? (Type "y" to confirm)\n> ')
             if not confirm in ("y", "yes"):
                 screen.print("\nNever mind, then.\n")
                 saved_games.close()
@@ -253,7 +253,7 @@ def run_load(screen, mem, loop=False, get_confirm=True):
             screen.print(text_style['item'](f"{i + 1}: {saved_games['list'][i]}"))
     else:
         screen.print('\nPlease enter a valid number')
-    number = player.screen.get_input('\n> ')
+    number = screen.get_input('\n> ')
     try:
         if int(number) == 0:
             screen.print("\nNever mind, then.\n")
