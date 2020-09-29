@@ -1,5 +1,6 @@
 class Room:
-    def __init__(self, slug, name, desc, dark=False, dark_desc="", no_mobs=False, no_drop=False, init_items=[]):
+    def __init__(self, game, slug, name, desc, dark=False, dark_desc="", no_mobs=False, no_drop=False, init_items=[]):
+        self.game = game
         self.slug = slug
         self.name = name
         self.desc = desc
@@ -21,7 +22,7 @@ class Room:
                 self.items.remove(item)
                 return True
             else:
-                item.screen.print("You decide to leave it there.\n")
+                self.game.screen.print("You decide to leave it there.\n")
                 return False
         else:
             return False

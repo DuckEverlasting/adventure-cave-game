@@ -6,7 +6,7 @@ from action import Action
 from action_run import run
 from constants import text_style
 
-def create(screen):
+def create(game):
     """
     Sets game objects at initial state and returns them.
     """
@@ -134,7 +134,7 @@ def create(screen):
     # Declare the items
     item = {
         "fists": Weapon(
-            screen=screen,
+            game=game,
             name=text_style['item']("fists"),
             long_name=f"your {text_style['item']('fists')}",
             desc=None,
@@ -150,7 +150,7 @@ def create(screen):
             tags=["obtainable"]
         ),
         "knife": Weapon(
-            screen=screen,
+            game=game,
             name=text_style['item']("knife"),
             long_name=f"a {text_style['item']('knife')}",
             desc=text_style['desc'](
@@ -168,7 +168,7 @@ def create(screen):
             tags=["obtainable"]
         ),
         "sword": Weapon(
-            screen=screen,
+            game=game,
             name=text_style['item']("sword"),
             long_name=f"a {text_style['item']('sword')}",
             desc=text_style['desc'](
@@ -185,7 +185,7 @@ def create(screen):
             tags=["obtainable"]
         ),
         "lantern": Light_Source(
-            screen=screen,
+            game=game,
             name=text_style['item']("lantern"),
             long_name=f"an extinguished {text_style['item']('lantern')}",
             desc=text_style['desc'](
@@ -195,7 +195,7 @@ def create(screen):
             tags=["obtainable"]
         ),
         "amulet_of_yendor": Item(
-            screen=screen,
+            game=game,
             name=text_style['item']("Amulet of Yendor"),
             long_name=f"the {text_style['item']('Amulet of Yendor')}",
             desc=text_style['desc'](
@@ -205,7 +205,7 @@ def create(screen):
             tags=["obtainable"]
         ),
         "cheese": Item(
-            screen=screen,
+            game=game,
             name=text_style['item']("cheese"),
             long_name=f"a hunk of {text_style['item']('cheese')}",
             desc=text_style['desc'](
@@ -215,7 +215,7 @@ def create(screen):
             tags=["obtainable", "food"]
         ),
         "goblin_corpse": Item(
-            screen=screen,
+            game=game,
             name=text_style['item']("goblin corpse"),
             long_name=f"a {text_style['item']('goblin corpse')}",
             desc=text_style['desc'](
@@ -224,7 +224,7 @@ def create(screen):
             tags=["corpse"]
         ),
         "lever": Item(
-            screen=screen,
+            game=game,
             name=text_style['item']("lever"),
             long_name=f"a {text_style['item']('lever')} jutting from the cliffside",
             desc=text_style['desc'](
@@ -232,7 +232,7 @@ def create(screen):
             )
         ),
         "matchbook": Item(
-            screen=screen,
+            game=game,
             name=text_style['item']("matchbook"),
             long_name=f"a {text_style['item']('matchbook')}",
             desc=text_style['desc'](
@@ -242,7 +242,7 @@ def create(screen):
             tags=["obtainable"]
         ),
         "rope": Item(
-            screen=screen,
+            game=game,
             name=text_style['item']("rope"),
             long_name=f"some {text_style['item']('rope')}",
             desc=text_style['desc']("Good, sturdy rope, about 50 feet long."),
@@ -255,6 +255,7 @@ def create(screen):
     # Declare the rooms
     room = {
         "outside": Room(
+            game=game,
             slug="outside",
             name = "Outside Cave Entrance",
             desc = text_style['desc'](
@@ -263,6 +264,7 @@ def create(screen):
             no_mobs = True,
         ),
         "foyer": Room(
+            game=game,
             slug="foyer",
             name = "Foyer",
             desc = text_style['desc'](
@@ -271,6 +273,7 @@ def create(screen):
             init_items = [item["sword"]],
         ),
         "overlook": Room(
+            game=game,
             slug="overlook",
             name = "Grand Overlook",
             desc = text_style['desc'](
@@ -279,6 +282,7 @@ def create(screen):
             init_items = [item["rope"]],
         ),
         "narrow": Room(
+            game=game,
             slug="narrow",
             name = "Narrow Passage",
             desc = text_style['desc'](
@@ -286,6 +290,7 @@ def create(screen):
             ),
         ),
         "treasure": Room(
+            game=game,
             slug="treasure",
             name = "Treasure Chamber",
             desc = text_style['desc'](
@@ -294,6 +299,7 @@ def create(screen):
             init_items = [item["lantern"]],
         ),
         "chasm": Room(
+            game=game,
             slug="chasm",
             name = "Over The Edge",
             desc = text_style['desc'](
@@ -308,6 +314,7 @@ def create(screen):
             init_items=[item["lever"]]
         ),
         "final": Room(
+            game=game,
             slug="final",
             name = "Across the Chasm",
             desc = text_style['desc'](
@@ -321,7 +328,7 @@ def create(screen):
     # Declare the mobs
     mob = {
         "goblin": Mob(
-            screen=screen,
+            game=game,
             name = text_style['mob']("goblin"),
             long_name = f"a {text_style['mob']('goblin')}",
             desc = text_style['desc'](
@@ -371,7 +378,7 @@ def create(screen):
     }
 
     # Declare the player
-    player = Player(screen=screen, init_loc = room["outside"], init_items=[item["cheese"]])
+    player = Player(game=game, init_loc = room["outside"], init_items=[item["cheese"]])
 
     # Link rooms together
     room["outside"].n_to = (room["foyer"], "You step into the mouth of the cave.")

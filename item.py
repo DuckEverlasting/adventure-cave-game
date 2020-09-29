@@ -2,8 +2,8 @@ class Item:
     """
     Base item class
     """
-    def __init__(self, screen, name, long_name, desc, weight=None, tags=[]):
-        self.screen = screen
+    def __init__(self, game, name, long_name, desc, weight=None, tags=[]):
+        self.game = game
         self.name = name
         self.long_name = long_name
         self.desc = desc
@@ -17,7 +17,7 @@ class Item:
         """
         Default behavior for the "use" command. Overwrite to specify a use.
         """
-        self.screen.print(f"You don't see a way to use the {self.name}.\n")
+        self.game.screen.print(f"You don't see a way to use the {self.name}.\n")
         return False
     
     def use_from_env(self):
@@ -25,10 +25,10 @@ class Item:
         Default behavior for the "use" command if the item is in the room, but not in inventory. Overwrite to specify.
         """
         if "obtainable" in self.tags:
-            self.screen.print("Try picking it up first.\n")
+            self.game.screen.print("Try picking it up first.\n")
             return False
         else:
-            self.screen.print("You can't use that.\n")
+            self.game.screen.print("You can't use that.\n")
             return False
     
     def on_eat(self):
@@ -54,15 +54,15 @@ class Item:
         Handles the "eat" command for most items. Can overwrite to specify, of course.
         """
         if "food" in self.tags:
-            self.screen.print(f"You wolf down the {self.name}. Yum.\n")
+            self.game.screen.print(f"You wolf down the {self.name}. Yum.\n")
             self.on_eat()
             container.items.remove(self)
             return True
         elif "corpse" in self.tags:
-            self.screen.print("What? No. That's just... no.\n\nGross.\n")
+            self.game.screen.print("What? No. That's just... no.\n\nGross.\n")
             return False
         else:
-            self.screen.print(f"That's... not food.\n")
+            self.game.screen.print(f"That's... not food.\n")
             return False
 
 class Light_Source(Item):

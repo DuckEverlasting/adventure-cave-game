@@ -3,8 +3,8 @@ from constants import text_style
 
 
 class Mob:
-    def __init__(self, screen, name, long_name, desc, text, stats, init_loc, init_att, items=[]):
-        self.screen = screen
+    def __init__(self, game, name, long_name, desc, text, stats, init_loc, init_att, items=[]):
+        self.game = game
         self.name = name
         self.long_name = long_name
         self.desc = desc
@@ -54,19 +54,19 @@ class Mob:
         attack_chance = self.accuracy
         dodge_chance = player.evasion
         if random.random() < attack_chance * (1 - dodge_chance):
-            self.screen.print(f"{random.choice(self.text['attack_fail'])}\n")
+            self.game.screen.print(f"{random.choice(self.text['attack_fail'])}\n")
         else:
             player.health -= self.damage
             if player.health > 0:
-                self.screen.print(f"{random.choice(self.text['attack_success'])}\n")
+                self.game.screen.print(f"{random.choice(self.text['attack_success'])}\n")
             else:
-                self.screen.print(random.choice(self.text["kill_player"]) + "\n")
+                self.game.screen.print(random.choice(self.text["kill_player"]) + "\n")
 
     def on_look(self):
         pass
 
     def on_talk(self):
-        self.screen.print(f"The {self.name} lets forth a series on unintelligible grunts and yips, and\nyou suddenly remember that you don't speak {self.name}.\n")
+        self.game.screen.print(f"The {self.name} lets forth a series on unintelligible grunts and yips, and\nyou suddenly remember that you don't speak {self.name}.\n")
 
     def kill(self):
         for i in self.items:

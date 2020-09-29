@@ -1,5 +1,5 @@
 import pygame
-from adv import initialize, submit_input
+from adv import Game
 
 pygame.init()
 
@@ -58,7 +58,7 @@ class Screen:
         # TODO
         pass
 
-game = initialize(Screen())
+game = Game(Screen())
 text_input = TextInput(game)
 
 while running:
