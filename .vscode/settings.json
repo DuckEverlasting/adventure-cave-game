@@ -1,0 +1,4 @@
+{
+    "python.autoComplete.extraPaths": ["../"],
+    "python.pythonPath": "c:/users/matt/.virtualenvs/adventure-cave-qpf5ea7m/Scripts/"
+}
