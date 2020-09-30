@@ -1,15 +1,11 @@
 import random
 import copy
-from colorama import init as color_init
 import os
 
 from constants import text_style, pause
 from logic import parse_list, parse_command, action_synonyms
 from definitions import create
 from mob_act import mob_act
-
-# Initialize colorama
-color_init()
 
 class Game:
     def __init__(self, screen):
@@ -26,13 +22,13 @@ class Game:
         screen = None
 
     def initialize_state(self):
-        state = create(self)
-        self.item = state["item"]
-        self.room = state["room"]
-        self.mob = state["mob"]
-        self.player = state["player"]
-        self.action = state["action"]
-        state = None
+        temp = create(self)
+        self.item = temp["item"]
+        self.room = temp["room"]
+        self.mob = temp["mob"]
+        self.player = temp["player"]
+        self.action = temp["action"]
+        temp = None
 
     def initialize_mem(self):
     # Initialize mem - use when starting new game

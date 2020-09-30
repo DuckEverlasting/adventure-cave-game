@@ -1,5 +1,5 @@
+import pygame
 import time
-from colorama import Fore, Back, Style
 
 # Set up wrappers for coloring text
 def title_text(string):

@@ -15,6 +15,14 @@ class Parser:
     def parse(self, text):
         return text
 
+class TextDisplay:
+    def __init__(self, rect=pygame.Rect(200, 600, 400, 24), font=base_font, color=(255,255,255)):
+        self.text = ""
+        self.game = game
+        self.rect = rect
+        self.font = font
+        self.color = color
+
 class TextInput:
     def __init__(self, game, rect=pygame.Rect(200, 600, 400, 24), font=base_font, color=(255,255,255)):
         self.text = ""

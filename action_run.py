@@ -5,10 +5,19 @@ from logic import parse_list
 def run_help(game, command):
     game.screen.print("==============\nBasic Controls\n==============")
     game.screen.print(
-        f"Move around: \"{text_style['item']('n')}orth\", \"{text_style['item']('s')}outh\", \"{text_style['item']('e')}ast\", \"{text_style['item']('w')}est\", \"down\", \"up\""
+        "Move around: \"{text_style['item']('n')}orth\", \"{text_style['item']('s')}outh\", \"{text_style['item']('e')}ast\", \"{text_style['item']('w')}est\", \"down\", \"up\""
     )
     game.screen.print(
-        f"Interact with things: \"{text_style['item']('l')}ook\", \"{text_style['item']('g')}et\", \"{text_style['item']('d')}rop\", \"{text_style['item']('u')}se\", \"eat\""
+        "Interact with things: ",
+        text_style['item']('l'),
+        "ook, ",
+        text_style['item']('g'),
+        "et, ",
+        text_style['item']('d'),
+        "rop, ",
+        text_style['item']('u'),
+        "se, ",
+        "eat"
     )
     game.screen.print(f"Check inventory: \"{text_style['item']('i')}nv\"")
     game.screen.print(f"Fight: \"attack\"")
