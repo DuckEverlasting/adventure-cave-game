@@ -30,7 +30,7 @@ class Room:
                 self.items.remove(item)
                 return True
             else:
-                self.game.display.print_list(["You decide to leave it there.\n"])
+                self.game.display.print_list("You decide to leave it there.\n")
                 return False
         else:
             return False

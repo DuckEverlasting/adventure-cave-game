@@ -1,4 +1,4 @@
-import pygame
+import pyglet
 from adv import Game
 
 pygame.init()
@@ -46,24 +46,9 @@ class TextDisplay:
         self.font = font
         self.color = color
 
-    def print_list(self, items):
-        if items is None:
-            items = [""]
-        for item in items:
-            if isinstance(item, str):
-                item = {
-                    "text": item,
-                    "color": (0, 0, 0),
-                    "background": None
-                }
-            string_list = item.text.split("\n")
-            text_surface = self.font.render(string_list.pop(0), True, item.color, item.background)
-            screen.blit(text_surface, (self.rect.x + self.pos_x, self.rect.y + self.pos_y))
-            for other_string in string_list:
-                self.pos_y -= self.font.get_height()
-                self.pos_x = 5
-                text_surface = self.font.render(other_string, True, item.color, item.background)
-                screen.blit(text_surface, (self.rect.x + self.pos_x, self.rect.y + self.pos_y))
+    def print_list(self, text=""):
+        # TODO
+        pass
 
     def new_line(self):
         self.pos_y -= self.font.get_height()

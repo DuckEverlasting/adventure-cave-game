@@ -58,25 +58,20 @@ class Mob:
         attack_chance = self.accuracy
         dodge_chance = player.evasion
         if random.random() < attack_chance * (1 - dodge_chance):
-            self.game.display.print_list(random.choice(self.text['attack_fail']) + ["\n"])
+            self.game.display.print_list(random.choice(self.text['attack_fail']) + "\n")
         else:
             player.health -= self.damage
             if player.health > 0:
-                self.game.display.print_list(random.choice(self.text['attack_success']) + ["\n"])
+                self.game.display.print_list(random.choice(self.text['attack_success']) + "\n")
             else:
-                self.game.display.print_list(random.choice(self.text["kill_player"]) + ["\n"])
+                self.game.display.print_list(random.choice(self.text["kill_player"]) + "\n")
 
     def on_look(self):
         pass
 
     def on_talk(self):
-        self.game.display.print_list([
-            "The ",
-            self.name,
-            "lets forth a series on unintelligible grunts and yips, and\nyou suddenly remember that you don't speak ",
-            self.name,
-            ".\n"
-        ])
+        self.game.display.print_list(f"The {self.name} lets forth a series on unintelligible grunts and yips, "
+                                     f"and\nyou suddenly remember that you don't speak {self.name}.\n")
 
     def kill(self):
         for i in self.items:

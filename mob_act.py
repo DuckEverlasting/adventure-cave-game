@@ -30,24 +30,12 @@ def neutral_behavior(mob, player, player_moved):
 def hostile_behavior(mob, player, player_moved):
     if mob.loc == player.prev_loc and player_moved:
         if player.loc.no_mobs:
-            player.game.display.print_list([
-                "You hear the ",
-                mob.name,
-                "'s snarls echoing after you, but it seems you won't be followed here.\n"
-            ])
+            player.game.display.print_list(f"You hear the {mob.name}'s snarls echoing after you, but it seems you won't be followed here.\n")
         else:
             mob.move(room=player.loc)
-            player.game.display.print_list([
-                "The ",
-                mob.name,
-                " chases after you.\n"
-            ])
+            player.game.display.print_list(f"The {mob.name} chases after you.\n")
     elif mob.loc == player.loc:
         if player_moved:
-            player.game.display.print_list([
-                "The ",
-                mob.name,
-                " spots you and growls, preparing to attack.\n"
-            ])
+            player.game.display.print_list(f"The {mob.name} spots you and growls, preparing to attack.\n")
         else:
             mob.attack_player(player)
