@@ -1,45 +1,72 @@
 import pygame
 import time
 
+black = (0, 0, 0)
+red = (255, 0, 0)
+blue = (0, 0, 255)
+yellow = (255, 255, 0)
+cyan = (0, 255, 255)
+magenta = (255, 0, 255)
+
+
 # Set up wrappers for coloring text
 def title_text(string):
-    return f"{Fore.YELLOW}{Style.BRIGHT}{Back.BLUE}{Style.BRIGHT}{string}{Style.RESET_ALL}{Style.BRIGHT}"
+    return {
+        "text": string,
+        "color": yellow,
+        "background": blue
+    }
+
 
 def error_text(string):
-    return f"{Fore.RED}{Style.BRIGHT}{string}{Style.RESET_ALL}{Style.BRIGHT}"
+    return {
+        "text": string,
+        "color": red,
+        "background": None
+    }
+
 
 def desc_text(string):
-    return f"{Fore.YELLOW}{Style.BRIGHT}{string}{Style.RESET_ALL}{Style.BRIGHT}"
+    return {
+        "text": string,
+        "color": yellow,
+        "background": None
+    }
+
 
 def item_text(string):
-    return f"{Fore.CYAN}{Style.BRIGHT}{string}{Style.RESET_ALL}{Style.BRIGHT}"
+    return {
+        "text": string,
+        "color": cyan,
+        "background": None
+    }
 
-def item_in_desc_text(string):
-    return f"{Fore.CYAN}{Style.BRIGHT}{string}{Fore.YELLOW}{Style.BRIGHT}"
 
 def mob_text(string):
-    return f"{Fore.RED}{Style.BRIGHT}{string}{Style.RESET_ALL}{Style.BRIGHT}"
+    return {
+        "text": string,
+        "color": red,
+        "background": None
+    }
 
-def mob_in_desc_text(string):
-    return f"{Fore.RED}{Style.BRIGHT}{string}{Fore.YELLOW}{Style.BRIGHT}"
 
 def dir_text(string):
-    return f"{Fore.MAGENTA}{Style.BRIGHT}{string}{Style.RESET_ALL}{Style.BRIGHT}"
+    return {
+        "text": string,
+        "color": magenta,
+        "background": None
+    }
 
-def dir_in_desc_text(string):
-    return f"{Fore.MAGENTA}{Style.BRIGHT}{string}{Fore.YELLOW}{Style.BRIGHT}"
 
 text_style = {
     "title": title_text,
     "error": error_text,
     "desc": desc_text,
     "item": item_text,
-    "item_in_desc": item_in_desc_text,
     "mob": mob_text,
-    "mob_in_desc": mob_in_desc_text,
-    "dir": dir_text,
-    "dir_in_desc": dir_in_desc_text,
+    "dir": dir_text
 }
+
 
 def pause(num=0.75):
     time.sleep(num)

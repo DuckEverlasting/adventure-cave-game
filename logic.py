@@ -87,6 +87,7 @@ action_synonyms = {
     "shout": "talk"
 }
 
+
 # Function to help interpret player commands
 def parse_command(command):
     error = {
@@ -98,7 +99,8 @@ def parse_command(command):
         "error": "error"
     }
     # Edge case
-    if len(command) == 0: return error
+    if len(command) == 0:
+        return error
 
     # Check input for any phrases to be simplified
     for i in multi_word_replace:
@@ -109,14 +111,13 @@ def parse_command(command):
     command = command.split()
 
     # Remove unnecessary words
-    command = [i for i in command if not i in ignore_words]
+    command = [i for i in command if i not in ignore_words]
 
     # Check input for any words to replace with recognized commands
     for i in range(len(command)):
         if command[i] in single_word_replace:
             command[i] = single_word_replace[command[i]]
-    
-   
+
     # Declare return object, set action
     result = {
         "act": command[0],
@@ -168,33 +169,35 @@ def parse_command(command):
     # Filter out preposition, indirect object
     if prep:
         command.remove(prep)
+        # noinspection PyUnboundLocalVariable
         command.remove(i_obj)
-    
+
     # if anything is left, it's the direct object
     if len(command) > 1:
         return error
-    
+
     try:
         result["d_obj"] = command[0]
     except:
         pass
-    try: 
+    try:
         result["prep"] = prep
     except:
         pass
-    try: 
+    try:
         result["i_obj"] = i_obj
     except:
         pass
 
     return result
 
+
 # Function to parse out language for listing items. Pass a list of items or mobs into it.
-def parse_list(list):
-    if len(list) > 0:
-        list_string = ""
-        length = len(list)
-        for (ind, el) in enumerate(list):
+def parse_list(items):
+    list_string = ""
+    if len(items) > 0:
+        length = len(items)
+        for (ind, el) in enumerate(items):
             if ind == 0:
                 list_string = el.long_name
             elif length > ind + 1:
