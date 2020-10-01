@@ -1,58 +1,57 @@
 import pyglet
 from adv import Game
 
-pygame.init()
-
-screen = pygame.display.set_mode((800, 800))
-
-# pygame.display.pygame.display.set_icon(pygame.image.load(""))
+window = pyglet.window.Window()
 
 running = True
-base_font = pygame.font.Font(None, 24)
 
 
 class TextInput:
-    def __init__(self, game, rect=pygame.Rect(200, 600, 400, 24), font=base_font, color=(255, 255, 255)):
-        self.text = ""
+    def __init__(self, game, x, y, width):
         self.game = game
-        self.rect = rect
-        self.font = font
-        self.color = color
+        self.document = pyglet.text.decode_text('')
+        self.document.set_style(
+            0,
+            len(self.document.text),
+            {"color": (0, 0, 0, 255)}
+        )
+        font = self.document.get_font()
+        height = font.ascent - font.descent
 
-    def add(self, text):
-        text_surface = self.font.render(self.text + text, True, self.color)
-        if text_surface.get_width() < self.rect.w - 5:
-            self.text += text
+        self.layout = pyglet.text.layout.IncrementalTextLayout(
+            self.document,
+            width,
+            height,
+            multiline=False
+        )
+        self.caret = pyglet.text.caret.Caret(self.layout)
 
-    def delete(self):
-        self.text = self.text[:-1]
+        self.layout.x = x
+        self.layout.y = y
+
+        # Rectangular outline
+        # RECT SHAPE GOES HERE
+
+    def hit_test(self, x, y):
+        return (0 < x - self.layout.x < self.layout.width and
+                0 < y - self.layout.y < self.layout.height)
 
     def submit(self):
         self.game.submit_input(self.text)
-        self.text = ""
-
-    def render(self):
-        pygame.draw.rect(screen, self.color, self.rect, 2)
-        text_surface = self.font.render(self.text, True, self.color)
-        screen.blit(text_surface, (self.rect.x + 5, self.rect.y + 5))
+        self.document.text = ""
+        self.caret.move_to_point(self.layout.x, self.layout.y)
 
 
 class TextDisplay:
-    def __init__(self, rect=pygame.Rect(200, 600, 400, 24), font=base_font, color=(255, 255, 255)):
-        self.text = ""
-        self.pos_x = 5
-        self.pos_y = 5
-        self.rect = rect
-        self.font = font
-        self.color = color
+    def __init__(self):
+        self.text = pyglet.text.decode_attributed('')
+        self.layout = None
+        self.font = None
+        self.color = None
 
     def print_list(self, text=""):
         # TODO
         pass
-
-    def new_line(self):
-        self.pos_y -= self.font.get_height()
-        self.pos_x = 5
 
     def clear(self):
         # TODO
@@ -64,23 +63,8 @@ class TextDisplay:
 
 
 text_display = TextDisplay()
-
 game_instance = Game(text_display)
 text_input = TextInput(game_instance)
+game_instance.game_boot()
 
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-            pygame.quit()
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN:
-                text_input.submit()
-            elif event.key == pygame.K_BACKSPACE:
-                text_input.delete()
-            else:
-                text_input.add(event.unicode)
-
-    screen.fill((0, 0, 0))
-    text_input.render()
-    pygame.display.update()
+pyglet.app.run()
