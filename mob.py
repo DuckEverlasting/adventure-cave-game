@@ -27,10 +27,12 @@ class Mob:
 
     def move(self, direction=None, room=None):
         if direction:
-            if self.loc[f"{direction}_to"] is not None:
-                # noinspection SpellCheckingInspection
-                dest = self.loc[f"{direction}_to"]
-                self.loc = dest[0]
+            try:
+                destination = getattr(self.loc, f"{direction}_to")
+                self.loc = destination[0]
+            except AttributeError:
+                pass
+
         elif room:
             if not room.no_mobs:
                 self.loc = room
@@ -58,20 +60,20 @@ class Mob:
         attack_chance = self.accuracy
         dodge_chance = player.evasion
         if random.random() < attack_chance * (1 - dodge_chance):
-            self.game.display.print_list(random.choice(self.text['attack_fail']) + "\\")
+            self.game.display.print_text(random.choice(self.text['attack_fail']) + "\n\n")
         else:
             player.health -= self.damage
             if player.health > 0:
-                self.game.display.print_list(random.choice(self.text['attack_success']) + "\\")
+                self.game.display.print_text(random.choice(self.text['attack_success']) + "\n\n")
             else:
-                self.game.display.print_list(random.choice(self.text["kill_player"]) + "\\")
+                self.game.display.print_text(random.choice(self.text["kill_player"]) + "\n\n")
 
     def on_look(self):
         pass
 
     def on_talk(self):
-        self.game.display.print_list(f"The {self.name} lets forth a series on unintelligible grunts and yips, "
-                                     f"and\\you suddenly remember that you don't speak {self.name}.\\")
+        self.game.display.print_text(f"The {self.name} lets forth a series on unintelligible grunts and yips, "
+                                     f"and\n\nyou suddenly remember that you don't speak {self.name}.\n\n")
 
     def kill(self):
         for i in self.items:

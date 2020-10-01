@@ -45,15 +45,15 @@ class Player:
         """
         Moves the player and prints
         """
-        if self.loc[f"{direction}_to"] is not None:
-            # noinspection SpellCheckingInspection
-            dest = self.loc[f"{direction}_to"]
+        destination = None
+        try:
+            destination = getattr(self.loc, f"{direction}_to")
             self.prev_loc = self.loc
-            self.loc = dest[0]
-            self.game.display.print_list(dest[1] + "\\")
+            self.loc = destination[0]
+            self.game.display.print_text(destination[1] + "\n\n")
             return True
-        else:
-            self.game.display.print_list(text_style['error']("ERROR: MOVEMENT NOT ALLOWED\\"))
+        except AttributeError:
+            self.game.display.print_text(text_style['error']("ERROR: MOVEMENT NOT ALLOWED\n\n"))
             return False
 
     def get_item(self, item):
@@ -61,33 +61,33 @@ class Player:
             result = self.loc.remove_item(item)
             if result:
                 if self.load + item.weight > self.max_load:
-                    self.game.display.print_list(f"Your pack is too full for the {item.name}.\\")
+                    self.game.display.print_text(f"Your pack is too full for the {item.name}.\n\n")
                     return False
                 else:
                     self.items.append(item)
                     self.load += item.weight
-                    self.game.display.print_list(f"You pick up the {item.name}.\\")
+                    self.game.display.print_text(f"You pick up the {item.name}.\n\n")
                     item.on_pick_up()
                     return True
             else:
                 return False
         else:
-            self.game.display.print_list("There's nothing here by that name.\\")
+            self.game.display.print_text("There's nothing here by that name.\n\n")
             return False
 
     def drop_item(self, item, quiet=False):
         if item in self.items:
             if self.loc.no_drop:
-                self.game.display.print_list("You don't think that's a good idea here.\\")
+                self.game.display.print_text("You don't think that's a good idea here.\n\n")
                 return False
             self.items.remove(item)
             if not quiet:
-                self.game.display.print_list(f"You set down the {item.name}.\\")
+                self.game.display.print_text(f"You set down the {item.name}.\n\n")
             self.load -= item.weight
             self.loc.add_item(item)
             return True
         else:
-            self.game.display.print_list("You don't have one of those in your inventory\\")
+            self.game.display.print_text("You don't have one of those in your inventory\n\n")
             return False
 
     def use_item(self, item, target):
@@ -98,22 +98,22 @@ class Player:
             return item.use_from_env(target)
 
         else:
-            self.game.display.print_list("There's nothing here by that name.\\")
+            self.game.display.print_text("There's nothing here by that name.\n\n")
             return False
 
     def attack_mob(self, weapon, target):
         target.attitude = "hostile"
-        self.game.display.print_list(random.choice(weapon.attack_text) + "\\")
+        self.game.display.print_text(random.choice(weapon.attack_text) + "\n\n")
         attack_chance = self.accuracy * weapon.accuracy
         dodge_chance = target.evasion
         if random.random() < attack_chance * (1 - dodge_chance):
-            self.game.display.print_list(random.choice(target.text['dodge_fail']) + "\\")
+            self.game.display.print_text(random.choice(target.text['dodge_fail']) + "\n\n")
         else:
             target.health -= (self.strength / 10) * weapon.damage
             if target.health > 0:
-                self.game.display.print_list(random.choice(target.text['dodge_success']) + "\\")
+                self.game.display.print_text(random.choice(target.text['dodge_success']) + "\n\n")
             else:
-                self.game.display.print_list(random.choice(target.text["dead"]) + "\\")
+                self.game.display.print_text(random.choice(target.text["dead"]) + "\n\n")
                 target.kill()
 
     def eat_item(self, item):
@@ -124,5 +124,5 @@ class Player:
             return item.eat(self.loc)
 
         else:
-            self.game.display.print_list("There's nothing here by that name.\\")
+            self.game.display.print_text("There's nothing here by that name.\n\n")
             return False

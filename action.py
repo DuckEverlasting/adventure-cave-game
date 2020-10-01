@@ -13,7 +13,7 @@ class Action:
         if "adv_required" in self.grammar:
             # Currently hard coded for movement, since that's the only
             # place adverbs are being used.
-            if command["adv"] is not None:
+            if command["adv"] is None:
                 act = scrub_underscores(command['act'])
                 return {
                     "result": False,

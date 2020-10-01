@@ -16,38 +16,35 @@ class Game:
         self.mob = None
         self.player = None
         self.action = None
+        self.override = None
         self.mem = {}
+        self.game_boot()
 
     def game_boot(self):
         # Opening sequence
-        self.display.print_list(
+        self.display.print_text(
             text_style['title'](
-                """
-        █‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾█\\
-        █    █████╗ ██████╗ ██╗   ██╗███████╗███╗   ██╗████████╗██╗   ██╗██████╗ ███████╗   █\\
-        █   ██╔══██╗██╔══██╗██║   ██║██╔════╝████╗  ██║╚══██╔══╝██║   ██║██╔══██╗██╔════╝   █\\
-        █   ███████║██║  ██║██║   ██║█████╗  ██╔██╗ ██║   ██║   ██║   ██║██████╔╝█████╗     █\\
-        █   ██╔══██║██║  ██║╚██╗ ██╔╝██╔══╝  ██║╚██╗██║   ██║   ██║   ██║██╔══██╗██╔══╝     █\\
-        █   ██║  ██║██████╔╝ ╚████╔╝ ███████╗██║ ╚████║   ██║   ╚██████╔╝██║  ██║███████╗   █\\
-        █   ╚═╝  ╚═╝╚═════╝   ╚═══╝  ╚══════╝╚═╝  ╚═══╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝   █\\
-        █                                                                                   █\\
-        █                         ██████╗ █████╗ ██╗   ██╗███████╗                          █\\
-        █                        ██╔════╝██╔══██╗██║   ██║██╔════╝                          █\\
-        █                        ██║     ███████║██║   ██║█████╗                            █\\
-        █                        ██║     ██╔══██║╚██╗ ██╔╝██╔══╝                            █\\
-        █                        ╚██████╗██║  ██║ ╚████╔╝ ███████╗                          █\\
-        █                         ╚═════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝                          █\\
-        █___________________________________________________________________________________█\\
-
-        """
+                "█‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾█\n\n"
+                "█    █████╗ ██████╗ ██╗   ██╗███████╗███╗   ██╗████████╗██╗   ██╗██████╗ ███████╗   █\n\n"
+                "█   ██╔══██╗██╔══██╗██║   ██║██╔════╝████╗  ██║╚══██╔══╝██║   ██║██╔══██╗██╔════╝   █\n\n"
+                "█   ███████║██║  ██║██║   ██║█████╗  ██╔██╗ ██║   ██║   ██║   ██║██████╔╝█████╗     █\n\n"
+                "█   ██╔══██║██║  ██║╚██╗ ██╔╝██╔══╝  ██║╚██╗██║   ██║   ██║   ██║██╔══██╗██╔══╝     █\n\n"
+                "█   ██║  ██║██████╔╝ ╚████╔╝ ███████╗██║ ╚████║   ██║   ╚██████╔╝██║  ██║███████╗   █\n\n"
+                "█   ╚═╝  ╚═╝╚═════╝   ╚═══╝  ╚══════╝╚═╝  ╚═══╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝   █\n\n"
+                "█                                                                                   █\n\n"
+                "█                         ██████╗ █████╗ ██╗   ██╗███████╗                          █\n\n"
+                "█                        ██╔════╝██╔══██╗██║   ██║██╔════╝                          █\n\n"
+                "█                        ██║     ███████║██║   ██║█████╗                            █\n\n"
+                "█                        ██║     ██╔══██║╚██╗ ██╔╝██╔══╝                            █\n\n"
+                "█                        ╚██████╗██║  ██║ ╚████╔╝ ███████╗                          █\n\n"
+                "█                         ╚═════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝                          █\n\n"
+                "█___________________________________________________________________________________█\n\n"
             )
         )
 
         pause(3)
-
         self.display.clear()
-
-        self.handle_game_over(None)
+        self.handle_game_not_started()
 
     def create_new_game(self):
         temp = create(self)
@@ -63,10 +60,14 @@ class Game:
         }
 
     # Main loop
-    def enter_command(self, command, override=None, override_input=""):
+    def submit_command(self, command):
         # Player action
-        if override:
-            override(override_input)
+        command = command.lower()
+        if self.game_started is False:
+            self.handle_game_not_started(command)
+            return
+        elif self.override:
+            self.override(command)
         else:
             self.player_action(command)
 
@@ -82,18 +83,18 @@ class Game:
         # Check for game over
         game_is_over = False
         if self.player.health <= 0:
-            self.display.print_list("You have died. Better luck next time!")
+            self.display.print_text("You have died. Better luck next time!")
             self.game_started = False
 
         elif self.item["amulet_of_yendor"] in self.player.items:
-            self.display.print_list("You've won the game! Congratulations!!!")
+            self.display.print_text("You've won the game! Congratulations!!!")
             self.game_started = False
 
         if not self.game_started:
             pause()
             self.print_game_over()
             pause(2)
-            self.handle_game_over(None)
+            self.handle_game_not_started()
 
         # Check for loaded game
         if not self.mem["save_dat"] == {}:
@@ -108,7 +109,9 @@ class Game:
 
     def player_action(self, command):
         # Parse command
+        print(command)
         command = parse_command(command)
+        print(command)
         act = command["act"]
         error = command["error"]
 
@@ -119,13 +122,13 @@ class Game:
             act = action_synonyms[act]
 
         # Resolve player action
-        self.display.print_list()
+        self.display.print_text()
         if error:
-            self.display.print_list(text_style['error']("ERROR: COMMAND NOT RECOGNIZED\\"))
+            self.display.print_text(text_style['error']("ERROR: COMMAND NOT RECOGNIZED\n\n"))
         elif act in self.action:
             grammar_check = self.action[act].check_grammar(command)
             if not grammar_check["result"]:
-                self.display.print_list(grammar_check["message"] + "\\")
+                self.display.print_text(grammar_check["message"] + "\n\n")
             else:
                 action_result = self.action[act].run(self, command)
                 if action_result is not None:
@@ -139,32 +142,33 @@ class Game:
                         self.mem = action_result["load_game"]
                         self.player_moved = True
                         self.display.clear()
+                    if "override" in action_result:
+                        self.override = action_result.override
+                        return
 
         else:
-            self.display.print_list(f"You don't know how to {act}.\\")
+            self.display.print_text(f"You don't know how to {act}.\n\n")
 
     def print_game_over(self):
-        self.display.print_list(
+        self.display.print_text(
             text_style['title'](
-                """
-█‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾█\\
-█     ██████╗  █████╗ ███╗   ███╗███████╗     ██████╗ ██╗   ██╗███████╗██████╗      █\\
-█    ██╔════╝ ██╔══██╗████╗ ████║██╔════╝    ██╔═══██╗██║   ██║██╔════╝██╔══██╗     █\\
-█    ██║  ███╗███████║██╔████╔██║█████╗      ██║   ██║██║   ██║█████╗  ██████╔╝     █\\
-█    ██║   ██║██╔══██║██║╚██╔╝██║██╔══╝      ██║   ██║╚██╗ ██╔╝██╔══╝  ██╔══██╗     █\\
-█    ╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗    ╚██████╔╝ ╚████╔╝ ███████╗██║  ██║     █\\
-█     ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝     ╚═════╝   ╚═══╝  ╚══════╝╚═╝  ╚═╝     █\\
-█___________________________________________________________________________________█\\\\
-"""
+                "█‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾█\n\n"
+                "█     ██████╗  █████╗ ███╗   ███╗███████╗     ██████╗ ██╗   ██╗███████╗██████╗      █\n\n"
+                "█    ██╔════╝ ██╔══██╗████╗ ████║██╔════╝    ██╔═══██╗██║   ██║██╔════╝██╔══██╗     █\n\n"
+                "█    ██║  ███╗███████║██╔████╔██║█████╗      ██║   ██║██║   ██║█████╗  ██████╔╝     █\n\n"
+                "█    ██║   ██║██╔══██║██║╚██╔╝██║██╔══╝      ██║   ██║╚██╗ ██╔╝██╔══╝  ██╔══██╗     █\n\n"
+                "█    ╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗    ╚██████╔╝ ╚████╔╝ ███████╗██║  ██║     █\n\n"
+                "█     ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝     ╚═════╝   ╚═══╝  ╚══════╝╚═╝  ╚═╝     █\n\n"
+                "█___________________________________________________________________________________█\n\n\n\n"
             )
         )
 
-    def handle_game_over(self, choice):
-        while choice not in ["1", "2", "3"]:
+    def handle_game_not_started(self, choice=None):
+        if choice not in ["1", "2", "3"]:
             if choice is not None:
-                self.display.print_list("Please enter one of the below options:")
-            self.display.print_list(text_style["item"]("1: Start new game\\2: Load game\\3: Quit game\\"))
-            choice = self.display.get_input(lambda i: self.handle_game_over(i))
+                self.display.print_text("Please enter one of the below options:")
+            self.display.print_text(text_style["item"]("1: Start new game\n\n2: Load game\n\n3: Quit game\n\n"))
+            return
         if choice == "1":
             self.create_new_game()
             self.player_moved = True
@@ -182,35 +186,35 @@ class Game:
             else:
                 pyglet.app.exit()
         elif choice == "3":
-            self.display.print_list("\\Exiting game...\\")
+            self.display.print_text("\n\nExiting game...\n\n")
             pause(0.75)
             pyglet.app.exit()
 
     def display_room_info(self):
         if self.player_moved:
-            spacers = "-" * len(self.player.loc.name)
-            self.display.print_list(spacers)
-            self.display.print_list(self.player.loc.name)
-            self.display.print_list(spacers)
+            spacers = "-" * 10
+            self.display.print_text(spacers)
+            self.display.print_text(self.player.loc.name)
+            self.display.print_text(spacers + "\n\n")
 
         mobs_here = [self.mob[i] for i in self.mob if self.mob[i].alive and self.mob[i].loc == self.player.loc]
         if self.player.loc.dark and not self.player.light_check():
             if not self.player.loc.slug + "_dark" in self.mem["looked_at"]:
-                self.display.print_list(self.player.loc.dark_desc + "\\")
+                self.display.print_text(self.player.loc.dark_desc + "\n\n")
                 self.mem["looked_at"][self.player.loc.slug + "_dark"] = True
             if self.player_moved and len(mobs_here) > 0:
-                self.display.print_list(f"You hear {parse_list('something')} moving in the darkness.\\")
+                self.display.print_text(f"You hear {parse_list('something')} moving in the darkness.\n\n")
         else:
             if self.player.loc.slug not in self.mem["looked_at"]:
-                self.display.print_list(self.player.loc.desc, "\\")
+                self.display.print_text(self.player.loc.desc + "\n\n")
                 self.mem["looked_at"][self.player.loc.slug] = True
             if self.player_moved:
                 if len(self.player.loc.items) > 0:
-                    self.display.print_list(f"You see {parse_list(self.player.loc.items)} here.")
+                    self.display.print_text(f"You see {parse_list(self.player.loc.items)} here.")
                     if len(mobs_here) == 0:
-                        self.display.print_list()
+                        self.display.print_text()
                 if len(mobs_here) > 0:
-                    self.display.print_list(f"You see {parse_list(mobs_here)} here.\\")
+                    self.display.print_text(f"You see {parse_list(mobs_here)} here.\n\n")
 
         # Reset variables
         self.time_passed = False
