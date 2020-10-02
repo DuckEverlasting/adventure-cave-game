@@ -1,14 +1,18 @@
+from inspect import signature
+
 import pyglet
-from constants import text_style, pause
+from constants import text_style
 from logic import parse_list, parse_command, action_synonyms
 from definitions import create
 from mob_act import mob_act
 
 
 class Game:
-    def __init__(self, display):
-        self.display = display
-        self.game_started = False
+    def __init__(self, app):
+        self.app = app
+        self.display = app.display
+        self.game_initialized = False
+        self.game_running = False
         self.time_passed = False
         self.player_moved = True
         self.item = None
@@ -18,13 +22,14 @@ class Game:
         self.action = None
         self.override = None
         self.mem = {}
-        self.game_boot()
 
     def game_boot(self):
         # Opening sequence
         self.display.print_text(
             text_style['title'](
-                "█‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾█\n\n"
+                "{.align 'center'}"
+                "█████████████████████████████████████████████████████████████████████████████████████\n\n"
+                "█                                                                                   █\n\n"
                 "█    █████╗ ██████╗ ██╗   ██╗███████╗███╗   ██╗████████╗██╗   ██╗██████╗ ███████╗   █\n\n"
                 "█   ██╔══██╗██╔══██╗██║   ██║██╔════╝████╗  ██║╚══██╔══╝██║   ██║██╔══██╗██╔════╝   █\n\n"
                 "█   ███████║██║  ██║██║   ██║█████╗  ██╔██╗ ██║   ██║   ██║   ██║██████╔╝█████╗     █\n\n"
@@ -38,13 +43,12 @@ class Game:
                 "█                        ██║     ██╔══██║╚██╗ ██╔╝██╔══╝                            █\n\n"
                 "█                        ╚██████╗██║  ██║ ╚████╔╝ ███████╗                          █\n\n"
                 "█                         ╚═════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝                          █\n\n"
-                "█___________________________________________________________________________________█\n\n"
+                "█                                                                                   █\n\n"
+                "█                             Press Any Key To Begin                                █\n\n"
+                "█████████████████████████████████████████████████████████████████████████████████████\n\n"
+                "{.align 'left'}"
             )
         )
-
-        pause(3)
-        self.display.clear()
-        self.handle_game_not_started()
 
     def create_new_game(self):
         temp = create(self)
@@ -63,38 +67,37 @@ class Game:
     def submit_command(self, command):
         # Player action
         command = command.lower()
-        if self.game_started is False:
-            self.handle_game_not_started(command)
+        if self.game_running is False:
+            self.handle_game_not_running(command)
             return
         elif self.override:
             self.override(command)
+            self.override = None
         else:
             self.player_action(command)
-
-        # Brief pause included for flavor
-        pause()
 
         # Mob actions
         if self.time_passed:
             for i in self.mob:
                 if self.mob[i].alive:
+                    self.display.wait()
                     mob_act(self.mob[i], self.player, self.player_moved)
 
         # Check for game over
         game_is_over = False
         if self.player.health <= 0:
             self.display.print_text("You have died. Better luck next time!")
-            self.game_started = False
+            self.game_running = False
 
         elif self.item["amulet_of_yendor"] in self.player.items:
             self.display.print_text("You've won the game! Congratulations!!!")
-            self.game_started = False
+            self.game_running = False
 
-        if not self.game_started:
-            pause()
+        if not self.game_running:
+            self.display.wait()
             self.print_game_over()
-            pause(2)
-            self.handle_game_not_started()
+            self.display.wait(2)
+            self.handle_game_not_running()
 
         # Check for loaded game
         if not self.mem["save_dat"] == {}:
@@ -109,9 +112,7 @@ class Game:
 
     def player_action(self, command):
         # Parse command
-        print(command)
         command = parse_command(command)
-        print(command)
         act = command["act"]
         error = command["error"]
 
@@ -130,20 +131,26 @@ class Game:
             if not grammar_check["result"]:
                 self.display.print_text(grammar_check["message"] + "\n\n")
             else:
-                action_result = self.action[act].run(self, command)
+                run = self.action[act].run
+                if "game" not in signature(run).parameters:
+                    action_result = run()
+                elif "command" not in signature(run).parameters:
+                    action_result = run(self)
+                else:
+                    action_result = self.action[act].run(self, command)
                 if action_result is not None:
                     if "time_passed" in action_result:
                         self.time_passed = True
                     if "player_moved" in action_result:
                         self.player_moved = True
                     if "end_game" in action_result:
-                        pyglet.app.exit()
+                        self.app.window.close()
                     if "load_game" in action_result:
                         self.mem = action_result["load_game"]
                         self.player_moved = True
                         self.display.clear()
                     if "override" in action_result:
-                        self.override = action_result.override
+                        self.override = action_result["override"]
                         return
 
         else:
@@ -163,7 +170,10 @@ class Game:
             )
         )
 
-    def handle_game_not_started(self, choice=None):
+    def handle_game_not_running(self, choice=None):
+        if not self.game_initialized:
+            self.display.clear()
+            self.display.wait(.3)
         if choice not in ["1", "2", "3"]:
             if choice is not None:
                 self.display.print_text("Please enter one of the below options:")
@@ -172,7 +182,7 @@ class Game:
         if choice == "1":
             self.create_new_game()
             self.player_moved = True
-            self.game_started = True
+            self.game_running = True
             self.display.clear()
             self.display_room_info()
         elif choice == "2":
@@ -180,14 +190,14 @@ class Game:
             if result and "load_game" in result:
                 self.mem = result["load_game"]
                 self.player_moved = True
-                self.game_started = True
+                self.game_running = True
                 self.display.clear()
                 self.display_room_info()
             else:
                 pyglet.app.exit()
         elif choice == "3":
             self.display.print_text("\n\nExiting game...\n\n")
-            pause(0.75)
+            self.display.wait(.75)
             pyglet.app.exit()
 
     def display_room_info(self):

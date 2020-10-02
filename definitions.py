@@ -284,8 +284,8 @@ def create(game):
             name="Grand Overlook",
             desc=text_style['desc'](
                 f"A steep cliff appears before you, falling into the darkness. Ahead to the "
-                f"{text_style['dir_in_desc']('north')}, a light\\flickers in the distance, but there is no way across "
-                f"the chasm. A passage leads {text_style['dir_in_desc']('south')},\\away from the cliff."
+                f"{text_style['dir_in_desc']('north')}, a lightflickers in the distance, but there is no way across "
+                f"the chasm. A passage leads {text_style['dir_in_desc']('south')},away from the cliff."
             ),
             init_items=[item["rope"]],
         ),
@@ -304,7 +304,7 @@ def create(game):
             name="Treasure Chamber",
             desc=text_style['desc'](
                 f"You've found the long-lost treasure chamber! Sadly, it has already been completely emptied "
-                f"by\\earlier adventurers. The only exit is to the {text_style['dir_in_desc']('south')}."
+                f"byearlier adventurers. The only exit is to the {text_style['dir_in_desc']('south')}."
             ),
             init_items=[item["lantern"]],
         ),
@@ -313,14 +313,14 @@ def create(game):
             slug="chasm",
             name="Over The Edge",
             desc=text_style['desc'](
-                f"You find yourself suspended over a dark chasm, at the end of a rope that was clearly not\\long "
+                f"You find yourself suspended over a dark chasm, at the end of a rope that was clearly notlong "
                 f"enough for this job. Glancing about, you see a {text_style['item_in_desc']('lever')} jutting out "
-                f"from the wall, half hidden.\\The rope leads back {text_style['dir_in_desc']('up')}."
+                f"from the wall, half hidden.The rope leads back {text_style['dir_in_desc']('up')}."
             ),
             dark=True,
             dark_desc=text_style['desc'](
-                f"You find yourself suspended over a dark chasm, at the end of a rope that was clearly not\\long "
-                f"enough for this job. It is dark. You can't see a thing. You are likely to be eaten by a grue.\\The "
+                f"You find yourself suspended over a dark chasm, at the end of a rope that was clearly notlong "
+                f"enough for this job. It is dark. You can't see a thing. You are likely to be eaten by a grue.The "
                 f"rope leads back {text_style['dir_in_desc']('up')}."
             ),
             no_mobs=True,
@@ -333,8 +333,8 @@ def create(game):
             name="Across the Chasm",
             desc=text_style['desc'](
                 f"You find a small, elaborately decorated room. Sunlight streams down a hole in the ceiling "
-                f"high\\above you, illuminating an altar upon which sits the fabled "
-                f"{text_style['item_in_desc']('Amulet of Yendor')}.\\To the {text_style['dir_in_desc']('south')}, a "
+                f"highabove you, illuminating an altar upon which sits the fabled "
+                f"{text_style['item_in_desc']('Amulet of Yendor')}.To the {text_style['dir_in_desc']('south')}, a "
                 f"bridge leads back the way you came."
             ),
             init_items=[item["amulet_of_yendor"]]
@@ -349,7 +349,7 @@ def create(game):
             long_name=f"a {text_style['mob']('goblin')}",
             desc=text_style['desc'](
                 f"The {text_style['mob_in_desc']('goblin')} is eyeing you warily and shuffling his weight from one "
-                f"foot to the other.\\A crude knife dangles from his belt."
+                f"foot to the other.A crude knife dangles from his belt."
             ),
             text={
                 "enter": (
@@ -375,7 +375,7 @@ def create(game):
                 ),
                 "dead": (
                     f"The {text_style['mob']('goblin')} cries out in shock as your attack connects. He gives you a "
-                    f"baleful glare that fades into\\a look of weary resignation as he slumps to the ground, dead.",
+                    f"baleful glare that fades intoa look of weary resignation as he slumps to the ground, dead.",
                 ),
                 "attack_success": (
                     f"The {text_style['mob']('goblin')} whips its knife out towards you in a desperate arc. It carves "
@@ -387,7 +387,7 @@ def create(game):
                 ),
                 "kill_player": (
                     f"The {text_style['mob']('goblin')} screams at you and flies forward, plunging its knife into "
-                    f"your chest. You final thought,\\improbably, is a silent prayer that the "
+                    f"your chest. You final thought,improbably, is a silent prayer that the "
                     f"{text_style['mob']('goblin')}'s filthy knife doesn't give you an infection.",
                 )
             },
@@ -421,7 +421,7 @@ def create(game):
     room["overlook"].n_to = (
         room["overlook"],
         "You take a step back, and get ready to jump over the gap. Then you realize that is "
-        f"an\\incredibly stupid idea, and decide you would rather live."
+        f"anincredibly stupid idea, and decide you would rather live."
     )
     room["narrow"].w_to = (room["foyer"], "You move west through the cramped passage until it opens up a bit.")
     room["narrow"].n_to = (room["treasure"], "You follow your nose and head north.")
@@ -443,7 +443,7 @@ def create(game):
         else:
             player.game.display.print(
                 f"You swing the {text_style['item']('sword')} around wildly. After a few wide arcs, it slips out of "
-                f"your fingers and clatters to the ground.\\"
+                f"your fingers and clatters to the ground.\n"
             )
             player.drop_item(item["sword"], quiet=True)
 
@@ -456,7 +456,7 @@ def create(game):
         if player.loc == room["overlook"]:
             player.game.display.print(
                 f"You tie off one end of the {text_style['item']('rope')} to a convenient stalagmite "
-                f"and drop the rest off the cliff.\\"
+                f"and drop the rest off the cliff.\n"
             )
 
             # remove from inventory
@@ -465,13 +465,13 @@ def create(game):
             # modify the room
             room["overlook"].desc = text_style['desc'](
                 f"A steep cliff appears before you, falling into the darkness. Ahead to the "
-                f"{text_style['dir_in_desc']('north')}, a light\\flickers in the distance, but there is no way "
-                f"across the chasm. A passage leads {text_style['dir_in_desc']('south')},\\away from the cliff. A "
+                f"{text_style['dir_in_desc']('north')}, a lightflickers in the distance, but there is no way "
+                f"across the chasm. A passage leads {text_style['dir_in_desc']('south')},away from the cliff. A "
                 f"tied off rope offers a way {text_style['dir_in_desc']('down')}."
             )
             room["overlook"].d_to = (
                 room["chasm"],
-                "You climb down the rope, and make it about a third of the way\\down the cliff before you reach "
+                "You climb down the rope, and make it about a third of the waydown the cliff before you reach "
                 f"the end of the line. Oh dear.",
             )
 
@@ -501,13 +501,13 @@ def create(game):
     def use_lantern():
         if item["matchbook"] in player.items:
             if item["lantern"].lit:
-                player.game.display.print(f"The lantern is already lit.\\")
+                player.game.display.print(f"The lantern is already lit.\n")
                 return False
             else:
                 item["lantern"].lit = True
                 item["lantern"].long_name = f"a lit {text_style['item']('lantern')}"
                 item["lantern"].desc = f"The {text_style['item']('lantern')} is giving off a warm glow."
-                player.game.display.print(f"You strike a match and light the lantern. The room brightens.\\")
+                player.game.display.print(f"You strike a match and light the lantern. The room brightens.\n")
                 return True
         else:
             player.game.display.print("You don't have anything to light it with.")
@@ -519,14 +519,14 @@ def create(game):
     def use_matchbook():
         if item["lantern"] in player.items:
             if item["lantern"].lit:
-                player.game.display.print(f"The lantern is already lit.\\")
+                player.game.display.print(f"The lantern is already lit.\n")
                 return False
             else:
                 item["lantern"].lit = True
-                player.game.display.print(f"You strike a match and light the lantern. The room brightens.\\")
+                player.game.display.print(f"You strike a match and light the lantern. The room brightens.\n")
                 return True
         else:
-            player.game.display.print("You don't have anything you want to light on fire.\\")
+            player.game.display.print("You don't have anything you want to light on fire.\n")
             return False
 
     item["matchbook"].use = use_matchbook
@@ -544,15 +544,15 @@ def create(game):
         if player.light_check():
             player.game.display.print(
                 "You pull the lever. A loud rinding noise echoes through the chasm. You nearly lose your grip "
-                f"but\\manage to hold on as a bridge lowers from the ceiling of the cave, shuddering into place\\above "
+                f"but manage to hold on as a bridge lowers from the ceiling of the cave, shuddering into place above "
                 f"you. Looks like you can cross the chasm now. What are the odds that lever would be in this "
-                f"exact\\place on the cliff side?\\"
+                f"exact place on the cliff side?\n"
             )
             room["overlook"].desc = text_style['desc'](
                 f"A steep cliff appears before you, falling into the darkness. Ahead to the "
-                f"{text_style['dir_in_desc']('north')}, a narrow bridge\\has been lowered, leading to a light "
+                f"{text_style['dir_in_desc']('north')}, a narrow bridge has been lowered, leading to a light "
                 f"flickering in the distance. A passage leads {text_style['dir_in_desc']('south')}, away from the "
-                f"cliff.\\A tied off rope offers a way {text_style['dir_in_desc']('down')}."
+                f"cliff. A tied off rope offers a way {text_style['dir_in_desc']('down')}."
             )
             room["overlook"].n_to = (
                 room["final"],
@@ -562,7 +562,7 @@ def create(game):
         else:
             player.game.display.print(
                 f"It's too dark for that right now. Also, how do you know about "
-                f"the {text_style['item']('lever')}, cheater?\\"
+                f"the {text_style['item']('lever')}, cheater?\n"
             )
             return False
 

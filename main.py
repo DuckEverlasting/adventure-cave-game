@@ -1,5 +1,18 @@
 import pyglet
-from adv import Game
+from game import Game
+
+
+"""
+TODO:
+- set pauses where appropriate
+- get better graphics
+- get text display to anchor to bottom correctly
+- get scroll working
+- get previous command cache working (borrow from Gazorkazork?)
+- test game for bugs
+- add content to game???
+- add sound???????
+"""
 
 
 class TextInput:
@@ -9,28 +22,23 @@ class TextInput:
         self.document.set_style(
             0,
             len(self.document.text),
-            {"color": (0, 0, 0, 255)}
+            {"color": (255, 255, 255, 255)}
         )
         font = self.document.get_font()
         height = font.ascent - font.descent
-        self.background = pyglet.shapes.Rectangle(x, y - 5, width, height + 10, color=(255, 255, 255), batch=bg)
+        self.background = pyglet.shapes.Rectangle(x, y - 20, width, height + 40, color=(0, 0, 0), batch=bg)
 
         self.layout = pyglet.text.layout.IncrementalTextLayout(
             self.document,
-            width - 10,
+            width - 40,
             height,
             multiline=False,
             batch=fg
         )
-        self.caret = pyglet.text.caret.Caret(self.layout)
+        self.caret = pyglet.text.caret.Caret(self.layout, color=(255, 255, 255))
 
-        self.layout.x = x + 5
+        self.layout.x = x + 20
         self.layout.y = y
-
-    def on_key_press(self, symbol, modifiers):
-        if symbol == pyglet.window.key.RETURN:
-            self.submit()
-            return True
 
     def submit(self):
         self.game.submit_command(self.document.text)
@@ -40,56 +48,80 @@ class TextInput:
 
 class TextDisplay:
     def __init__(self, x, y, width, height, fg, bg):
-        self.document = pyglet.text.document.FormattedDocument(" ")
+        self.init_text = "{font_name 'Courier New'}{font_size 12}{color (255, 255, 255, 255)}" + "\n\n"
+        self.current_text = self.init_text
+        document = pyglet.text.decode_attributed(self.init_text)
         self.layout = pyglet.text.layout.ScrollableTextLayout(
-            self.document,
-            width - 10,
-            height - 10,
+            document,
+            width - 40,
+            height - 40,
             multiline=True,
             batch=fg
         )
-        self.background = pyglet.shapes.Rectangle(x, y, width, height, color=(255, 255, 255), batch=bg)
-        self.layout.x = x + 5
-        self.layout.y = y + 5
+        self.background = pyglet.shapes.Rectangle(x, y, width, height, color=(0, 0, 0), batch=bg)
+        self.y_max = y
+        self.layout.x = x + 20
+        self.layout.y = min(self.layout.content_height, self.y_max) + 20
+        self.layout.view_y = self.layout.height - self.layout.content_height
+        self.clock = pyglet.clock.Clock()
 
     def print_text(self, text=""):
-        formatted = pyglet.text.decode_attributed(text)
-        self.document.insert_text(len(self.document.text), formatted.text)
-        self.layout.view_y = self.layout.height - self.layout.content_height
-
+        self.current_text += (text + "\n\n")
+        self.update_document()
 
     def clear(self):
-        self.document.text = ""
+        self.current_text = self.init_text
+        self.update_document()
+
+    def update_document(self):
+        self.layout.document = pyglet.text.decode_attributed(self.current_text)
+        self.layout.y = min(self.layout.content_height, self.y_max) + 20
+        self.layout.view_y = self.layout.height - self.layout.content_height
+
+    def wait(self, pause=.75):
+        elapsed = 0
+        while elapsed <= pause:
+            elapsed += self.clock.tick()
 
 
-window = pyglet.window.Window(width=800, height=800)
-fg_batch = pyglet.graphics.Batch()
-bg_batch = pyglet.graphics.Batch()
+# noinspection PyMethodMayBeStatic
+class AppController:
+    def __init__(self):
+        self.window = pyglet.window.Window(width=1200, height=800)
+        pyglet.gl.glClearColor(0, 0.15, 0.03, 1)
+        self.fg_batch = pyglet.graphics.Batch()
+        self.bg_batch = pyglet.graphics.Batch()
 
-left = window.width * .125 // 1
-bottom = window.height * .300 // 1
-bottom_2 = window.height * .125 // 1
-w = window.width * .75 // 1
-h = window.height * .5 // 1
+        left = self.window.width * .125 // 1
+        bottom = self.window.height * .300 // 1
+        bottom_2 = self.window.height * .125 // 1
+        w = self.window.width * .75 // 1
+        h = self.window.height * .5 // 1
 
-text_display = TextDisplay(left, bottom, w, h, fg_batch, bg_batch)
-game_instance = Game(text_display)
-text_input = TextInput(game_instance, left, bottom_2, w, fg_batch, bg_batch)
-window.push_handlers(text_input.caret)
-window.push_handlers(text_input.on_key_press)
+        self.display = TextDisplay(left, bottom, w, h, self.fg_batch, self.bg_batch)
+        self.game_instance = Game(self)
+        self.input = TextInput(self.game_instance, left, bottom_2, w, self.fg_batch, self.bg_batch)
+        self.window.push_handlers(self.input.caret)
+        self.window.push_handlers(self.on_draw, self.on_key_press, self.on_text)
+        self.submit_on_any_key = True
+
+        self.game_instance.game_boot()
+
+    def on_key_press(self, symbol, modifiers):
+        if symbol == pyglet.window.key.RETURN or self.submit_on_any_key is True:
+            self.input.submit()
+            return True
+
+    def on_draw(self):
+        self.window.clear()
+        self.bg_batch.draw()
+        self.fg_batch.draw()
+
+    def on_text(self, text):
+        if text == "\r" or self.submit_on_any_key:
+            self.submit_on_any_key = False
+            return True
 
 
-@window.event
-def on_draw():
-    window.clear()
-    bg_batch.draw()
-    fg_batch.draw()
-
-
-@window.event
-def on_text(text):
-    if text == "\r":
-        return True
-
-
+app_controller = AppController()
 pyglet.app.run()

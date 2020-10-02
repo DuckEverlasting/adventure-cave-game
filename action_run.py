@@ -1,5 +1,5 @@
 import shelve  # Used in saving / loading
-from constants import text_style, pause
+from constants import text_style
 from logic import parse_list
 
 
@@ -55,7 +55,7 @@ def run_go(game, command):
         }
 
 
-def run_inventory(game, command):
+def run_inventory(game):
     if len(game.player.items) > 0:
         game.display.print_text(
             "You have " +
@@ -66,19 +66,19 @@ def run_inventory(game, command):
         game.display.print_text("You have no items in your inventory.\n\n")
 
 
-def run_wait(game, command):
+def run_wait():
     return {
         "time_passed": True,
     }
 
 
-def run_quit(game, command, confirm=None):
+def run_quit(game, confirm=None):
     if confirm is None:
         game.display.print_text('Are you sure? (Type "y" to confirm)\n\n')
         return {"override": lambda response: run_quit(game, confirm=response)}
     if confirm in ("y", "yes"):
         game.display.print_text("\n\nExiting game...\n\n")
-        pause(0.75)
+        game.display.wait(0.75)
         return {"end_game": True}
     else:
         game.display.print_text()
@@ -246,7 +246,7 @@ def run_talk(game, command):
         game.display.print_text(f"There's no {i_obj} here.\n\n")
 
 
-def run_die(game, command, confirm=None):
+def run_die(game, confirm=None):
     if confirm is None:
         game.display.print_text('Really? (Type "y" to confirm)\n\n')
         return {"override": lambda response: run_die(game, confirm=response)}
@@ -257,7 +257,7 @@ def run_die(game, command, confirm=None):
         game.display.print_text()
 
 
-def run_save(game, command, confirm=None, name=None, overwrite=None):
+def run_save(game, confirm=None, name=None, overwrite=None):
     # Get saved games
     saved_games = shelve.open('saved_games')
     if "list" not in saved_games:
@@ -297,7 +297,7 @@ def run_save(game, command, confirm=None, name=None, overwrite=None):
     return
 
 
-def run_load(game, command, loop=False, get_confirm=True, confirm=None, number=None):
+def run_load(game, loop=False, get_confirm=True, confirm=None, number=None):
     if number is not None:
         try_load(game, number)
         return
@@ -329,7 +329,7 @@ def try_load(game, number):
             return
         elif int(number) - 1 in range(len(saved_games["list"])):
             game.display.print_text("\n\nLoading game...\n\n")
-            pause(0.75)
+            game.display.wait(0.75)
             name = saved_games["list"][int(number) - 1]
             new_mem = saved_games[name]
             saved_games.close()
