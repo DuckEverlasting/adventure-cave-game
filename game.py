@@ -1,7 +1,7 @@
 from inspect import signature
 
 import pyglet
-from constants import text_style
+from constants import text_style, command_text
 from logic import parse_list, parse_command, action_synonyms
 from definitions import create
 from mob_act import mob_act
@@ -64,52 +64,6 @@ class Game:
         }
 
     # Main loop
-    def submit_command(self, command):
-        # Player action
-        command = command.lower()
-        if self.game_running is False:
-            self.handle_game_not_running(command)
-            return
-        elif self.override:
-            self.override(command)
-            self.override = None
-        else:
-            self.player_action(command)
-
-        # Mob actions
-        if self.time_passed:
-            for i in self.mob:
-                if self.mob[i].alive:
-                    self.display.wait()
-                    mob_act(self.mob[i], self.player, self.player_moved)
-
-        # Check for game over
-        game_is_over = False
-        if self.player.health <= 0:
-            self.display.print_text("You have died. Better luck next time!")
-            self.game_running = False
-
-        elif self.item["amulet_of_yendor"] in self.player.items:
-            self.display.print_text("You've won the game! Congratulations!!!")
-            self.game_running = False
-
-        if not self.game_running:
-            self.display.wait()
-            self.print_game_over()
-            self.display.wait(2)
-            self.handle_game_not_running()
-
-        # Check for loaded game
-        if not self.mem["save_dat"] == {}:
-            self.player = self.mem["save_dat"]["player"]
-            self.item = self.mem["save_dat"]["item"]
-            self.room = self.mem["save_dat"]["room"]
-            self.mob = self.mem["save_dat"]["mob"]
-            self.mem["save_dat"] = {}
-
-        # Display current data
-        self.display_room_info()
-
     def player_action(self, command):
         # Parse command
         command = parse_command(command)
@@ -155,6 +109,54 @@ class Game:
 
         else:
             self.display.print_text(f"You don't know how to {act}.\n\n")
+
+    def submit_command(self, command):
+        # Player action
+        self.display.print_text(command_text(">>> " + command))
+
+        command = command.lower()
+        if self.game_running is False:
+            self.handle_game_not_running(command)
+            return
+        elif self.override:
+            self.override(command)
+            self.override = None
+        else:
+            self.player_action(command)
+
+        # Mob actions
+        if self.time_passed:
+            for i in self.mob:
+                if self.mob[i].alive:
+                    self.display.wait()
+                    mob_act(self.mob[i], self.player, self.player_moved)
+
+        # Check for game over
+        game_is_over = False
+        if self.player.health <= 0:
+            self.display.print_text("You have died. Better luck next time!")
+            self.game_running = False
+
+        elif self.item["amulet_of_yendor"] in self.player.items:
+            self.display.print_text("You've won the game! Congratulations!!!")
+            self.game_running = False
+
+        if not self.game_running:
+            self.display.wait()
+            self.print_game_over()
+            self.display.wait(2)
+            self.handle_game_not_running()
+
+        # Check for loaded game
+        if not self.mem["save_dat"] == {}:
+            self.player = self.mem["save_dat"]["player"]
+            self.item = self.mem["save_dat"]["item"]
+            self.room = self.mem["save_dat"]["room"]
+            self.mob = self.mem["save_dat"]["mob"]
+            self.mem["save_dat"] = {}
+
+        # Display current data
+        self.display_room_info()
 
     def print_game_over(self):
         self.display.print_text(

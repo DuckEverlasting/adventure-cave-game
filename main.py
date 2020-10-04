@@ -1,6 +1,6 @@
 import pyglet
 from game import Game
-
+from history import History
 
 """
 TODO:
@@ -18,14 +18,15 @@ TODO:
 class TextInput:
     def __init__(self, game, x, y, width, fg, bg):
         self.game = game
+        self.history = History()
         self.document = pyglet.text.document.UnformattedDocument()
         self.document.set_style(
             0,
             len(self.document.text),
             {"color": (255, 255, 255, 255)}
         )
-        font = self.document.get_font()
-        height = font.ascent - font.descent
+        self.font = self.document.get_font()
+        height = self.font.ascent - self.font.descent
         self.background = pyglet.shapes.Rectangle(x, y - 20, width, height + 40, color=(0, 0, 0), batch=bg)
 
         self.layout = pyglet.text.layout.IncrementalTextLayout(
@@ -42,8 +43,20 @@ class TextInput:
 
     def submit(self):
         self.game.submit_command(self.document.text)
+        self.history.push(self.document.text)
         self.document.delete_text(0, len(self.document.text))
-        self.caret.move_to_point(self.layout.x, self.layout.y)
+        self.caret.position = 0
+
+    def prev(self):
+        prev_text = self.history.get_prev()
+        if prev_text is not None:
+            self.document.text = prev_text
+            self.caret.position = len(self.document.text)
+
+    def next(self):
+        next_text = self.history.get_next()
+        self.document.text = next_text
+        self.caret.position = len(self.document.text)
 
 
 class TextDisplay:
@@ -88,7 +101,7 @@ class TextDisplay:
 class AppController:
     def __init__(self):
         self.window = pyglet.window.Window(width=1200, height=800)
-        pyglet.gl.glClearColor(0, 0.15, 0.03, 1)
+        pyglet.gl.glClearColor(0.15, 0.15, 0.15, 1)
         self.fg_batch = pyglet.graphics.Batch()
         self.bg_batch = pyglet.graphics.Batch()
 
@@ -110,6 +123,12 @@ class AppController:
     def on_key_press(self, symbol, modifiers):
         if symbol == pyglet.window.key.RETURN or self.submit_on_any_key is True:
             self.input.submit()
+            return True
+        elif symbol == pyglet.window.key.UP:
+            self.input.prev()
+            return True
+        elif symbol == pyglet.window.key.DOWN:
+            self.input.next()
             return True
 
     def on_draw(self):

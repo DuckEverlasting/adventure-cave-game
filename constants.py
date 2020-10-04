@@ -4,6 +4,7 @@ white = "(245, 245, 245, 255)}"
 black = "(0, 0, 0, 255)}"
 red = "(255, 75, 75, 255)}"
 blue = "(0, 0, 200, 255)}"
+green = "(0, 200, 0, 255)}"
 yellow = "(220, 220, 0, 255)}"
 cyan = "(0, 200, 200, 255)}"
 magenta = "(255, 75, 255, 255)}"
@@ -13,6 +14,10 @@ background = "{background_color "
 
 
 # Set up wrappers for coloring text
+def command_text(string):
+    return color + green + string + color + white
+
+
 def title_text(string):
     return color + yellow + background + blue + string + color + white + background + black
 
