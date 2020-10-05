@@ -8,8 +8,8 @@ TODO:
 - get better graphics
 - get text display to anchor to bottom correctly
 - get scroll working
-- get previous command cache working (borrow from Gazorkazork?)
 - test game for bugs
+- fix save / load
 - add content to game???
 - add sound???????
 """
@@ -61,10 +61,10 @@ class TextInput:
 
 class TextDisplay:
     def __init__(self, x, y, width, height, fg, bg):
-        self.init_text = "{font_name 'Courier New'}{font_size 12}{color (255, 255, 255, 255)}" + "\n\n"
+        self.init_text = "{font_name 'Courier New'}{font_size 12}{color (255, 255, 255, 255)}" + "\n\n" * 20
         self.current_text = self.init_text
         document = pyglet.text.decode_attributed(self.init_text)
-        self.layout = pyglet.text.layout.ScrollableTextLayout(
+        self.layout = pyglet.text.layout.IncrementalTextLayout(
             document,
             width - 40,
             height - 40,
@@ -79,7 +79,7 @@ class TextDisplay:
         self.clock = pyglet.clock.Clock()
 
     def print_text(self, text=""):
-        self.current_text += (text + "\n\n")
+        self.current_text += ("\n\n" + text)
         self.update_document()
 
     def clear(self):
@@ -109,7 +109,7 @@ class AppController:
         bottom = self.window.height * .300 // 1
         bottom_2 = self.window.height * .125 // 1
         w = self.window.width * .75 // 1
-        h = self.window.height * .5 // 1
+        h = self.window.height * .55 // 1
 
         self.display = TextDisplay(left, bottom, w, h, self.fg_batch, self.bg_batch)
         self.game_instance = Game(self)
