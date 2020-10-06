@@ -1,3 +1,6 @@
+from constants import half_space
+
+
 class Item:
     """
     Base item class
@@ -20,7 +23,7 @@ class Item:
         """
         Default behavior for the "use" command. Overwrite to specify a use.
         """
-        self.game.display.print_text(f"You don't see a way to use the {self.name}.\n\n")
+        self.game.display.print_text(f"You don't see a way to use the {self.name}." + half_space)
         return False
 
     def use_from_env(self):
@@ -28,10 +31,10 @@ class Item:
         Default behavior for the "use" command if the item is in the room, but not in inventory. Overwrite to specify.
         """
         if "obtainable" in self.tags:
-            self.game.display.print_text("Try picking it up first.\n\n")
+            self.game.display.print_text("Try picking it up first." + half_space)
             return False
         else:
-            self.game.display.print_text("You can't use that.\n\n")
+            self.game.display.print_text("You can't use that." + half_space)
             return False
 
     def on_eat(self):
@@ -57,15 +60,15 @@ class Item:
         Handles the "eat" command for most items. Can overwrite to specify, of course.
         """
         if "food" in self.tags:
-            self.game.display.print_text(f"You wolf down the {self.name}. Yum.\n\n")
+            self.game.display.print_text(f"You wolf down the {self.name}. Yum." + half_space)
             self.on_eat()
             container.items.remove(self)
             return True
         elif "corpse" in self.tags:
-            self.game.display.print_text("What? No. That's just... no.\n\n\n\nGross.\n\n")
+            self.game.display.print_text("What? No. That's just... no.\n\n" + half_space + "Gross." + half_space)
             return False
         else:
-            self.game.display.print_text("That's... not food.\n\n")
+            self.game.display.print_text("That's... not food." + half_space)
             return False
 
 

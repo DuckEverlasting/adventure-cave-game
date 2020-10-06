@@ -12,6 +12,9 @@ magenta = "(255, 75, 255, 255)}"
 color = "{color "
 background = "{background_color "
 
+full_space = "\n\n"
+half_space = "{font_size 6}\n\n{font_size 12}"
+
 
 # Set up wrappers for coloring text
 def command_text(string):

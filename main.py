@@ -6,7 +6,6 @@ from history import History
 TODO:
 - set pauses where appropriate
 - get better graphics
-- get text display to anchor to bottom correctly
 - get scroll working
 - test game for bugs
 - fix save / load

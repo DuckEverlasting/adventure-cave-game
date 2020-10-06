@@ -1,3 +1,6 @@
+from constants import half_space
+
+
 class Room:
     def __init__(self, game, slug, name, desc, dark=False, dark_desc="", no_mobs=False, no_drop=False, init_items=None):
         if init_items is None:
@@ -24,7 +27,7 @@ class Room:
                 self.items.remove(item)
                 return True
             else:
-                self.game.display.print_text("You decide to leave it there.\n\n")
+                self.game.display.print_text("You decide to leave it there." + half_space)
                 return False
         else:
             return False

@@ -1,5 +1,5 @@
 import random
-from constants import text_style
+from constants import text_style, half_space
 
 
 class Mob:
@@ -60,20 +60,20 @@ class Mob:
         attack_chance = self.accuracy
         dodge_chance = player.evasion
         if random.random() < attack_chance * (1 - dodge_chance):
-            self.game.display.print_text(random.choice(self.text['attack_fail']) + "\n\n")
+            self.game.display.print_text(random.choice(self.text['attack_fail']) + half_space)
         else:
             player.health -= self.damage
             if player.health > 0:
-                self.game.display.print_text(random.choice(self.text['attack_success']) + "\n\n")
+                self.game.display.print_text(random.choice(self.text['attack_success']) + half_space)
             else:
-                self.game.display.print_text(random.choice(self.text["kill_player"]) + "\n\n")
+                self.game.display.print_text(random.choice(self.text["kill_player"]) + half_space)
 
     def on_look(self):
         pass
 
     def on_talk(self):
         self.game.display.print_text(f"The {self.name} lets forth a series on unintelligible grunts and yips, "
-                                     f"and\n\nyou suddenly remember that you don't speak {self.name}.\n\n")
+                                     f"and\n\nyou suddenly remember that you don't speak {self.name}." + half_space)
 
     def kill(self):
         for i in self.items:

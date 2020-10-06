@@ -1,7 +1,7 @@
 from inspect import signature
 
 import pyglet
-from constants import text_style, command_text
+from constants import text_style, command_text, full_space, half_space
 from logic import parse_list, parse_command, action_synonyms
 from definitions import create
 from mob_act import mob_act
@@ -77,13 +77,13 @@ class Game:
             act = action_synonyms[act]
 
         # Resolve player action
-        self.display.print_text()
+        self.display.print_text(half_space)
         if error:
-            self.display.print_text(text_style['error']("ERROR: COMMAND NOT RECOGNIZED\n\n"))
+            self.display.print_text(text_style['error']("ERROR: COMMAND NOT RECOGNIZED" + half_space))
         elif act in self.action:
             grammar_check = self.action[act].check_grammar(command)
             if not grammar_check["result"]:
-                self.display.print_text(grammar_check["message"] + "\n\n")
+                self.display.print_text(grammar_check["message"] + half_space)
             else:
                 run = self.action[act].run
                 if "game" not in signature(run).parameters:
@@ -108,7 +108,7 @@ class Game:
                         return
 
         else:
-            self.display.print_text(f"You don't know how to {act}.\n\n")
+            self.display.print_text(f"You don't know how to {act}." + half_space)
 
     def submit_command(self, command):
         # Player action
@@ -204,21 +204,21 @@ class Game:
 
     def display_room_info(self):
         if self.player_moved:
-            spacers = "-" * 10
-            self.display.print_text(spacers)
+            spacers = "-" * len(self.player.loc.name)
+            self.display.print_text(half_space + spacers)
             self.display.print_text(self.player.loc.name)
-            self.display.print_text(spacers + "\n\n")
+            self.display.print_text(spacers + half_space)
 
         mobs_here = [self.mob[i] for i in self.mob if self.mob[i].alive and self.mob[i].loc == self.player.loc]
         if self.player.loc.dark and not self.player.light_check():
             if not self.player.loc.slug + "_dark" in self.mem["looked_at"]:
-                self.display.print_text(self.player.loc.dark_desc + "\n\n")
+                self.display.print_text(self.player.loc.dark_desc + half_space)
                 self.mem["looked_at"][self.player.loc.slug + "_dark"] = True
             if self.player_moved and len(mobs_here) > 0:
-                self.display.print_text(f"You hear {parse_list('something')} moving in the darkness.\n\n")
+                self.display.print_text(f"You hear {parse_list('something')} moving in the darkness." + half_space)
         else:
             if self.player.loc.slug not in self.mem["looked_at"]:
-                self.display.print_text(self.player.loc.desc + "\n\n")
+                self.display.print_text(self.player.loc.desc + half_space)
                 self.mem["looked_at"][self.player.loc.slug] = True
             if self.player_moved:
                 if len(self.player.loc.items) > 0:
@@ -226,7 +226,7 @@ class Game:
                     if len(mobs_here) == 0:
                         self.display.print_text()
                 if len(mobs_here) > 0:
-                    self.display.print_text(f"You see {parse_list(mobs_here)} here.\n\n")
+                    self.display.print_text(f"You see {parse_list(mobs_here)} here." + half_space)
 
         # Reset variables
         self.time_passed = False
