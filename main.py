@@ -76,6 +76,7 @@ class TextDisplay:
         self.layout.x = x + 20
         self.layout.y = min(self.layout.content_height, self.y_max) + 20
         self.layout.view_y = self.layout.height - self.layout.content_height
+        self.view_y_max = self.layout.view_y - self.layout.height
         self.clock = pyglet.clock.Clock()
 
     def print_text(self, text=""):
@@ -96,6 +97,22 @@ class TextDisplay:
         while elapsed <= pause:
             elapsed += self.clock.tick()
 
+    def contains(self, x, y):
+        return (
+            self.background.x < x < self.background.x + self.background.width
+            and self.background.y < y < self.background.y + self.background.height
+        )
+
+    def scroll(self, scroll_y):
+        font = self.layout.document.get_font(0)
+        scroll_amount = .5 * (font.ascent - font.descent)
+        if scroll_y > 0:
+            self.layout.view_y = max(self.layout.view_y - scroll_amount,
+                                     self.layout.height - self.layout.content_height)
+        elif scroll_y < 0:
+            self.layout.view_y = min(self.layout.view_y + scroll_amount,
+                                     self.view_y_max)
+
 
 # noinspection PyMethodMayBeStatic
 class AppController:
@@ -115,7 +132,7 @@ class AppController:
         self.game_instance = Game(self)
         self.input = TextInput(self.game_instance, left, bottom_2, w, self.fg_batch, self.bg_batch)
         self.window.push_handlers(self.input.caret)
-        self.window.push_handlers(self.on_draw, self.on_key_press, self.on_text)
+        self.window.push_handlers(self.on_draw, self.on_key_press, self.on_text, self.on_mouse_scroll)
         self.submit_on_any_key = True
 
         self.game_instance.game_boot()
@@ -140,6 +157,10 @@ class AppController:
         if text == "\r" or self.submit_on_any_key:
             self.submit_on_any_key = False
             return True
+
+    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        if self.display.contains(x, y):
+            self.display.scroll(scroll_y)
 
 
 app_controller = AppController()
