@@ -17,7 +17,7 @@ class Game:
         self.player_moved = True
         self.item = None
         self.room = None
-        self.mob = None
+        self.mobs = None
         self.player = None
         self.action = None
         self.override = None
@@ -51,12 +51,12 @@ class Game:
         )
 
     def create_new_game(self):
-        temp = create(self)
-        self.item = temp["item"]
-        self.room = temp["room"]
-        self.mob = temp["mob"]
-        self.player = temp["player"]
-        self.action = temp["action"]
+        state = create()
+        self.item = state["item"]
+        self.room = state["room"]
+        self.mobs = state["mobs"]
+        self.player = state["player"]
+        self.action = state["action"]
         self.mem = {
             "score": 0,
             "looked_at": {},
@@ -64,6 +64,60 @@ class Game:
         }
 
     # Main loop
+    def submit_command(self, command):
+        # Player action
+        self.display.print_text(command_text(">>> " + command))
+
+        command = command.lower()
+        if self.game_running is False:
+            self.handle_game_not_running(command)
+            return
+        elif self.override:
+            action_result = self.override(command)
+            if action_result is not None and "override" in action_result:
+                self.override = action_result["override"]
+                return
+            else:
+                self.override = None
+        else:
+            self.player_action(command)
+
+        # Mob actions
+        if self.time_passed:
+            for mob in self.mobs:
+                if mob.alive:
+                    result = mob_act(mob, self.player, self.player_moved)
+                    if "wait" in result:
+                        self.display.wait()
+                    if "print_text" in result:
+                        self.display.print_text(result["print_text"])
+
+        # Check for game over
+        if self.player.health <= 0:
+            self.display.print_text("You have died. Better luck next time!")
+            self.game_running = False
+
+        elif self.item["amulet_of_yendor"] in self.player.items:
+            self.display.print_text("You've won the game! Congratulations!!!")
+            self.game_running = False
+
+        if not self.game_running:
+            self.display.wait()
+            self.print_game_over()
+            self.display.wait(2)
+            self.handle_game_not_running()
+
+        # Check for loaded game
+        if not self.mem["save_dat"] == {}:
+            self.player = self.mem["save_dat"]["player"]
+            self.item = self.mem["save_dat"]["item"]
+            self.room = self.mem["save_dat"]["room"]
+            self.mobs = self.mem["save_dat"]["mobs"]
+            self.mem["save_dat"] = {}
+
+        # Display current data
+        self.display_room_info()
+
     def player_action(self, command):
         # Parse command
         command = parse_command(command)
@@ -109,54 +163,6 @@ class Game:
 
         else:
             self.display.print_text(f"You don't know how to {act}." + half_space)
-
-    def submit_command(self, command):
-        # Player action
-        self.display.print_text(command_text(">>> " + command))
-
-        command = command.lower()
-        if self.game_running is False:
-            self.handle_game_not_running(command)
-            return
-        elif self.override:
-            self.override(command)
-            self.override = None
-        else:
-            self.player_action(command)
-
-        # Mob actions
-        if self.time_passed:
-            for i in self.mob:
-                if self.mob[i].alive:
-                    self.display.wait()
-                    mob_act(self.mob[i], self.player, self.player_moved)
-
-        # Check for game over
-        game_is_over = False
-        if self.player.health <= 0:
-            self.display.print_text("You have died. Better luck next time!")
-            self.game_running = False
-
-        elif self.item["amulet_of_yendor"] in self.player.items:
-            self.display.print_text("You've won the game! Congratulations!!!")
-            self.game_running = False
-
-        if not self.game_running:
-            self.display.wait()
-            self.print_game_over()
-            self.display.wait(2)
-            self.handle_game_not_running()
-
-        # Check for loaded game
-        if not self.mem["save_dat"] == {}:
-            self.player = self.mem["save_dat"]["player"]
-            self.item = self.mem["save_dat"]["item"]
-            self.room = self.mem["save_dat"]["room"]
-            self.mob = self.mem["save_dat"]["mob"]
-            self.mem["save_dat"] = {}
-
-        # Display current data
-        self.display_room_info()
 
     def print_game_over(self):
         self.display.print_text(
@@ -209,7 +215,7 @@ class Game:
             self.display.print_text(self.player.loc.name)
             self.display.print_text(spacers + half_space)
 
-        mobs_here = [self.mob[i] for i in self.mob if self.mob[i].alive and self.mob[i].loc == self.player.loc]
+        mobs_here = [mob for mob in self.mobs if mob.alive and mob.loc == self.player.loc]
         if self.player.loc.dark and not self.player.light_check():
             if not self.player.loc.slug + "_dark" in self.mem["looked_at"]:
                 self.display.print_text(self.player.loc.dark_desc + half_space)

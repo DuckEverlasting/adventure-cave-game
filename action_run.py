@@ -3,6 +3,13 @@ from constants import text_style, half_space
 from logic import parse_list
 
 
+def get_mob_from_room(game, name):
+    mobs_with_name = [mob for mob in game.mobs if (mob.name == name) and (mob.loc == game.player.loc)]
+    if len(mobs_with_name):
+        return mobs_with_name[0]
+    return None
+
+
 # noinspection SpellCheckingInspection
 def run_help(game):
     game.display.print_text("==============\n\nBasic Controls\n\n==============")
@@ -48,10 +55,12 @@ def run_help(game):
 def run_go(game, command):
     dir_letter = command["adv"][0]
     result = game.player.move(dir_letter)
-    if result:
+    if "print_text" in result:
+        game.display.print_text(result["print_text"])
+    if "success" in result and result["success"] is True:
         return {
             "time_passed": True,
-            "player_moved": True,
+            "player_moved": True
         }
 
 
@@ -92,7 +101,7 @@ def run_look(game, command):
         else:
             game.display.print_text(game.player.loc.desc + half_space)
 
-        mobs_here = [game.mob[i] for i in game.mob if game.mob[i].alive and game.mob[i].loc == game.player.loc]
+        mobs_here = [mob for mob in game.mobs if mob.alive and mob.loc == game.player.loc]
 
         if not game.player.loc.dark or game.player.light_check():
             if len(game.player.loc.items) > 0:
@@ -136,20 +145,22 @@ def run_look(game, command):
             else:
                 game.display.print_text("There's nothing here by that name." + half_space)
 
-        elif obj in game.mob:
-            if game.mob[obj].loc == game.player.loc:
-                game.display.print_text(game.mob[obj].desc + half_space)
-                game.mob[obj].on_look()
-                return {"time_passed": True}
-            else:
-                game.display.print_text("There's nothing here by that name." + half_space)
+        elif obj in [mob.name for mob in game.mobs]:
+            for mob in [mob for mob in game.mobs if mob.name == obj]:
+                if mob.loc == game.player.loc:
+                    game.display.print_text(mob.desc + half_space)
+                    mob.on_look()
+                    return {"time_passed": True}
+            game.display.print_text("There's nothing here by that name." + half_space)
 
 
 def run_get(game, command):
     d_obj = command["d_obj"]
     if d_obj in game.item:
         result = game.player.get_item(game.item[d_obj])
-        if result:
+        if "print_text" in result:
+            game.display.print_text(result["print_text"])
+        if "success" in result and result["success"] is True:
             return {"time_passed": True}
     else:
         game.display.print_text("There's nothing here by that name." + half_space)
@@ -159,7 +170,9 @@ def run_drop(game, command):
     d_obj = command["d_obj"]
     if d_obj in game.item:
         result = game.player.drop_item(game.item[d_obj])
-        if result:
+        if "print_text" in result:
+            game.display.print_text(result["print_text"])
+        if "success" in result and result["success"] is True:
             return {"time_passed": True}
     else:
         game.display.print_text("You don't have one of those in your inventory" + half_space)
@@ -170,11 +183,15 @@ def run_use(game, command):
     i_obj = command["d_obj"]
     if d_obj in game.player.items:
         result = game.player.use_item(game.item[d_obj], i_obj)
-        if result:
+        if "print_text" in result:
+            game.display.print_text(result["print_text"])
+        if "success" in result and result["success"] is True:
             return {"time_passed": True}
     elif d_obj in game.player.loc.items:
         result = game.player.use_item_from_env(game.item[d_obj], i_obj)
-        if result:
+        if "print_text" in result:
+            game.display.print_text(result["print_text"])
+        if "success" in result and result["success"] is True:
             return {"time_passed": True}
     else:
         game.display.print_text("There's nothing here by that name." + half_space)
@@ -184,62 +201,69 @@ def run_attack(game, command, selection=None):
     d_obj = command["d_obj"]
     i_obj = command["i_obj"]
 
-    if d_obj in game.mob:
-        if game.mob[d_obj].loc == game.player.loc:
-            if not i_obj:
-                weapons = [i for i in game.player.items if "weapon" in i.tags] + [game.item["fists"]]
-                if not selection:
-                    weapon_string = "Attack with what?"
-                    for i in range(len(weapons)):
-                        weapon_string += f"\n\n{i + 1}: {text_style['item'](weapons[i].name)}"
-                    game.display.print_text(weapon_string)
-                    return {"override": lambda num: run_attack(game, command, num)}
-                try:
-                    selection = int(selection) - 1
-                    i_obj = weapons[selection]
-                except:
-                    return
-            elif not game.item[i_obj] in game.player.items:
-                if i_obj[0] in ["a", "e", "i", "o", "u"]:
-                    game.display.print_text(f"You don't have an {i_obj} on you." + half_space)
-                    return
-                else:
-                    game.display.print_text(f"You don't have a {i_obj} on you." + half_space)
-                    return
-            elif "weapon" not in game.item[i_obj].tags:
-                game.display.print_text("That's not a weapon." + half_space)
-                return
-            else:
-                i_obj = game.item[i_obj]
-            game.player.attack_mob(i_obj, game.mob[d_obj])
-            return {"time_passed": True}
-        else:
-            game.display.print_text(f"There's no {d_obj} here." + half_space)
-    else:
+    mob = get_mob_from_room(game, d_obj)
+    if mob is None:
         game.display.print_text(f"There's no {d_obj} here." + half_space)
+        return
+    if not i_obj:
+        weapons = [i for i in game.player.items if "weapon" in i.tags] + [game.item["fists"]]
+        if not selection:
+            weapon_string = "Attack with what?"
+            for i in range(len(weapons)):
+                weapon_string += f"\n\n{i + 1}: {text_style['item'](weapons[i].name)}"
+            game.display.print_text(weapon_string)
+            return {"override": lambda num: run_attack(game, command, num)}
+        try:
+            selection = int(selection) - 1
+            i_obj = weapons[selection]
+        except:
+            return
+    elif not game.item[i_obj] in game.player.items:
+        if i_obj[0] in ["a", "e", "i", "o", "u"]:
+            game.display.print_text(f"You don't have an {i_obj} on you." + half_space)
+            return
+        else:
+            game.display.print_text(f"You don't have a {i_obj} on you." + half_space)
+            return
+    elif "weapon" not in game.item[i_obj].tags:
+        game.display.print_text("That's not a weapon." + half_space)
+        return
+    else:
+        i_obj = game.item[i_obj]
+    result = game.player.attack_mob(i_obj, mob)
+    if "print_text" in result:
+        game.display.print_text(result["print_text"])
+    if "print_text_2" in result:
+        game.display.wait()
+        game.display.print_text(result["print_text_2"])
+    return {"time_passed": True}
 
 
 def run_eat(game, command):
     d_obj = command["d_obj"]
     if d_obj in game.item:
         result = game.player.eat_item(game.item[d_obj])
-        if result:
+        if "print_text" in result:
+            game.display.print_text(result["print_text"])
+        if "success" in result and result["success"] is True:
             return {"time_passed": True}
-    elif d_obj in game.mob:
-        if game.mob[d_obj].loc == game.player.loc:
-            game.display.print_text("That's... not food." + half_space)
-        else:
-            game.display.print_text("There's nothing here by that name." + half_space)
+    elif get_mob_from_room(game, d_obj) is not None:
+        game.display.print_text("That's... not food." + half_space)
     else:
         game.display.print_text("There's nothing here by that name." + half_space)
 
 
 def run_talk(game, command):
     i_obj = command["i_obj"]
-    if i_obj in game.item and (game.item[i_obj] in game.player.items or game.item[i_obj] in game.player.loc.items):
-        game.display.print_text(f"You attempt to have a conversation with the {i_obj}. It is rather one-sided." + half_space)
-    elif i_obj in game.mob and game.mob[i_obj].loc == game.player.loc:
-        game.mob[i_obj].on_talk()
+    mob = get_mob_from_room(i_obj)
+    if mob is not None:
+        result = mob.on_talk()
+        if "print_text" in result:
+            game.display.print_text(result["print_text"])
+    elif i_obj in game.item and (game.item[i_obj] in game.player.items or game.item[i_obj] in game.player.loc.items):
+        game.display.print_text(
+            f"You attempt to have a conversation with the {i_obj}. It is rather one-sided." + half_space
+        )
     elif i_obj in ("myself", "yourself", "self",):
         game.display.print_text("You strike up a conversation with yourself, but quickly grow bored." + half_space)
     else:
@@ -259,42 +283,47 @@ def run_die(game, confirm=None):
 
 def run_save(game, confirm=None, name=None, overwrite=None):
     # Get saved games
-    saved_games = shelve.open('saved_games')
-    if "list" not in saved_games:
-        saved_games["list"] = []
-    if confirm is None:
-        game.display.print_text('Save your game? (Type "y" to confirm)' + half_space)
-        return {"override": lambda response: run_save(game, confirm=response)}
-    elif confirm not in ("y", "yes"):
-        game.display.print_text("\n\nNever mind, then." + half_space)
-        saved_games.close()
-        return
-    if name is None:
-        game.display.print_text("\n\nPick a name.")
-        return {"override": lambda response: run_save(game, confirm="y", name=response)}
-    if not name or name == "list":
-        game.display.print_text("\n\nSave failed." + half_space)
-        saved_games.close()
-        return
-    elif name in saved_games:
-        if overwrite not in ("y", "yes"):
-            game.display.print_text('That name already exists. Overwrite saved game? (Type "y" to confirm)' + half_space)
-            return {"override": lambda response: run_save(game, confirm="y", name=name, overwrite=response)}
-        if confirm not in ("y", "yes"):
+    with shelve.open('saved_games') as saved_games:
+        if "list" not in saved_games:
+            saved_games["list"] = []
+        if confirm is None:
+            game.display.print_text('Save your game? (Type "y" to confirm)' + half_space)
+            saved_games.close()
+            return {"override": lambda response: run_save(game, confirm=response)}
+        elif confirm not in ("y", "yes"):
             game.display.print_text("\n\nNever mind, then." + half_space)
             saved_games.close()
             return
-    game.mem["save_dat"] = {
-        "player": game.player,
-        "item": game.item,
-        "room": game.room,
-        "mob": game.mob
-    }
-    saved_games["list"] += [name]
-    saved_games[name] = game.mem
-    saved_games.close()
-    game.display.print_text("\n\nSaved!." + half_space)
-    return
+        if name is None:
+            game.display.print_text("\n\nPick a name.")
+            saved_games.close()
+            return {"override": lambda response: run_save(game, confirm="y", name=response)}
+        if not name or name == "list":
+            game.display.print_text("\n\nSave failed." + half_space)
+            saved_games.close()
+            return
+        elif name in saved_games:
+            if overwrite not in ("y", "yes"):
+                game.display.print_text(
+                    'That name already exists. Overwrite saved game? (Type "y" to confirm)' + half_space
+                )
+                saved_games.close()
+                return {"override": lambda response: run_save(game, confirm="y", name=name, overwrite=response)}
+            if confirm not in ("y", "yes"):
+                game.display.print_text("\n\nNever mind, then." + half_space)
+                saved_games.close()
+                return
+        game.mem["save_dat"] = {
+            "player": game.player,
+            "item": game.item,
+            "room": game.room,
+            "mobs": game.mobs
+        }
+        saved_games["list"] += [name]
+        save = {**game.mem}
+        saved_games[name] = save
+        saved_games.close()
+        game.display.print_text("\n\nSaved!." + half_space)
 
 
 def run_load(game, loop=False, get_confirm=True, confirm=None, number=None):
@@ -321,25 +350,25 @@ def run_load(game, loop=False, get_confirm=True, confirm=None, number=None):
 
 
 def try_load(game, number):
-    saved_games = shelve.open('saved_games')
-    try:
-        if int(number) == 0:
-            game.display.print_text("\n\nNever mind, then." + half_space)
-            saved_games.close()
-            return
-        elif int(number) - 1 in range(len(saved_games["list"])):
-            game.display.print_text("\n\nLoading game...\n\n")
-            game.display.wait(0.75)
-            name = saved_games["list"][int(number) - 1]
-            new_mem = saved_games[name]
-            saved_games.close()
-            return {"load_game": new_mem}
-        else:
+    with shelve.open('saved_games') as saved_games:
+        try:
+            if int(number) == 0:
+                game.display.print_text("\n\nNever mind, then." + half_space)
+                saved_games.close()
+                return
+            elif int(number) - 1 in range(len(saved_games["list"])):
+                game.display.print_text("\n\nLoading game...\n\n")
+                game.display.wait(0.75)
+                name = saved_games["list"][int(number) - 1]
+                new_mem = saved_games[name]
+                saved_games.close()
+                return {"load_game": new_mem}
+            else:
+                saved_games.close()
+                return run_load(game, loop=True)
+        except:
             saved_games.close()
             return run_load(game, loop=True)
-    except:
-        saved_games.close()
-        return run_load(game, loop=True)
 
 
 run = {

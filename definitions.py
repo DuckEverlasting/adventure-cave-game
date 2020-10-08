@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Union
+
 from room import Room
 from player import Player
 from item import Item, LightSource, Weapon
@@ -6,13 +8,165 @@ from action import Action
 from action_run import run
 from constants import text_style
 
+state: Dict[str, Union[Dict[Any, Any], List[Any], Player]] = {
+    "item": {},
+    "room": {},
+    "mobs": [],
+    "player": None,
+    "action": {}
+}
 
-def create(game):
+
+# sword
+def use_sword():
+    if state["player"].loc.no_drop:
+        return {
+            "print_text": f"This isn't a great place to mess around with your {text_style['item']('sword')}. "
+                          "You leave it be.",
+            "success": False
+        }
+    else:
+        state["player"].drop_item(state["item"]["sword"], quiet=True)
+        return {
+            "print_text": f"You swing the {text_style['item']('sword')} around wildly. After a few wide arcs, "
+                          f"it slips out of your fingers and clatters to the ground.\n\n",
+            "success": True
+        }
+
+
+# rope
+def use_rope():
+    if state["player"].loc == state["room"]["overlook"]:
+        print_text = f"You tie off one end of the {text_style['item']('rope')} to a convenient stalagmite and " \
+                     f"drop the rest off the cliff.\n\n "
+
+        # remove from inventory
+        state["player"].drop_item(state["item"]["rope"], quiet=True)
+
+        # modify the room
+        state["room"]["overlook"].desc = text_style['desc'](
+            f"A steep cliff appears before you, falling into the darkness. Ahead to the "
+            f"{text_style['dir_in_desc']('north')}, a lightflickers in the distance, but there is no way "
+            f"across the chasm. A passage leads {text_style['dir_in_desc']('south')},away from the cliff. A "
+            f"tied off rope offers a way {text_style['dir_in_desc']('down')}."
+        )
+        state["room"]["overlook"].d_to = (
+            state["room"]["chasm"],
+            "You climb down the rope, and make it about a third of the waydown the cliff before you reach "
+            f"the end of the line. Oh dear.",
+        )
+
+        # modify the item
+        state["item"]["rope"].long_name = f"a tied off length of {text_style['item']('rope')}"
+        state["item"]["rope"].desc = text_style['desc'](
+            "The rope looks pretty sturdy. It will probably hold your weight. Probably."
+        )
+        state["item"]["rope"].tags.remove("obtainable")
+
+        def use_from_env_rope():
+            return state["player"].move("d")
+
+        state["item"]["rope"].use_from_env = use_from_env_rope
+
+    else:
+        print_text = f"You try to use the {text_style['item']('rope')} as a lasso, and fail miserably."
+
+    return {
+        "print_text": print_text,
+        "success": True
+    }
+
+
+# lantern
+def use_lantern():
+    if state["item"]["matchbook"] in state["player"].items:
+        if state["item"]["lantern"].lit:
+            return {
+                "print_text": f"The lantern is already lit.\n\n",
+                "success": False
+            }
+        else:
+            state["item"]["lantern"].lit = True
+            state["item"]["lantern"].long_name = f"a lit {text_style['item']('lantern')}"
+            state["item"]["lantern"].desc = f"The {text_style['item']('lantern')} is giving off a warm glow."
+            return {
+                "print_text": f"You strike a match and light the lantern. The room brightens.\n\n",
+                "success": True
+            }
+    else:
+        return {
+            "print_text": "You don't have anything to light it with.",
+            "success": False
+        }
+
+
+# matchbook
+def use_matchbook():
+    if state["item"]["lantern"] in state["player"].items:
+        if state["item"]["lantern"].lit:
+            return {
+                "print_text": f"The lantern is already lit.\n\n",
+                "success": False
+            }
+        else:
+            state["item"]["lantern"].lit = True
+            state["item"]["lantern"].long_name = f"a lit {text_style['item']('lantern')}"
+            state["item"]["lantern"].desc = f"The {text_style['item']('lantern')} is giving off a warm glow."
+            return {
+                "print_text": f"You strike a match and light the lantern. The room brightens.\n\n",
+                "success": True
+            }
+    else:
+        return {
+            "print_text": "You don't have anything you want to light on fire.\n\n",
+            "success": False
+        }
+
+
+# goblin_corpse
+def on_look_goblin_corpse():
+    state["item"]["goblin_corpse"].desc = "It's a dead goblin. You don't want to touch it again."
+    state["player"].loc.add_item(state["item"]["matchbook"])
+    delattr(state["item"]["goblin_corpse"], "on_look")
+
+
+# lever
+def use_from_env_lever():
+    if state["player"].light_check():
+        state["room"]["overlook"].desc = text_style['desc'](
+            f"A steep cliff appears before you, falling into the darkness. Ahead to the "
+            f"{text_style['dir_in_desc']('north')}, a narrow bridge has been lowered, leading to a light "
+            f"flickering in the distance. A passage leads {text_style['dir_in_desc']('south')}, away from the "
+            f"cliff. A tied off rope offers a way {text_style['dir_in_desc']('down')}."
+        )
+        state["room"]["overlook"].n_to = (
+            state["room"]["final"],
+            "You carefully walk across the bridge, heading towards the light on the other side."
+        )
+        return {
+            "print_text": "You pull the lever. A loud rinding noise echoes through the chasm. You nearly lose "
+                          "your grip but manage to hold on as a bridge lowers from the ceiling of the cave, "
+                          "shuddering into place above you. Looks like you can cross the chasm now. What are the "
+                          "odds that lever would be in this exact place on the cliff side?\n\n",
+            "success": True
+        }
+    else:
+        return {
+            "print_text": f"It's too dark for that right now. Also, how do you know about "
+                          f"the {text_style['item']('lever')}, cheater?\n\n",
+            "success": False
+        }
+
+
+def create():
     """
     Sets game objects at initial state and returns them.
     """
+    # Declare the player
+    state["player"] = Player()
+
     # Declare the actions
-    action = {
+    state["action"] = {
         "attack": Action(
             name="attack",
             grammar={
@@ -133,9 +287,9 @@ def create(game):
     }
 
     # Declare the items
-    item = {
+    state["item"] = {
         "fists": Weapon(
-            game=game,
+            slug="fists",
             name=text_style['item']("fists"),
             long_name=f"your {text_style['item']('fists')}",
             desc=None,
@@ -152,7 +306,7 @@ def create(game):
             tags=["obtainable"]
         ),
         "knife": Weapon(
-            game=game,
+            slug="knife",
             name=text_style['item']("knife"),
             long_name=f"a {text_style['item']('knife')}",
             desc=text_style['desc'](
@@ -172,7 +326,7 @@ def create(game):
             tags=["obtainable"]
         ),
         "sword": Weapon(
-            game=game,
+            slug="sword",
             name=text_style['item']("sword"),
             long_name=f"a {text_style['item']('sword')}",
             desc=text_style['desc'](
@@ -189,7 +343,7 @@ def create(game):
             tags=["obtainable"]
         ),
         "lantern": LightSource(
-            game=game,
+            slug="lantern",
             name=text_style['item']("lantern"),
             long_name=f"an extinguished {text_style['item']('lantern')}",
             desc=text_style['desc'](
@@ -199,7 +353,7 @@ def create(game):
             tags=["obtainable"]
         ),
         "amulet_of_yendor": Item(
-            game=game,
+            slug="amulet_of_yendor",
             name=text_style['item']("Amulet of Yendor"),
             long_name=f"the {text_style['item']('Amulet of Yendor')}",
             desc=text_style['desc'](
@@ -209,7 +363,7 @@ def create(game):
             tags=["obtainable"]
         ),
         "cheese": Item(
-            game=game,
+            slug="cheese",
             name=text_style['item']("cheese"),
             long_name=f"a hunk of {text_style['item']('cheese')}",
             desc=text_style['desc'](
@@ -219,7 +373,7 @@ def create(game):
             tags=["obtainable", "food"]
         ),
         "goblin_corpse": Item(
-            game=game,
+            slug="goblin_corpse",
             name=text_style['item']("goblin corpse"),
             long_name=f"a {text_style['item']('goblin corpse')}",
             desc=text_style['desc'](
@@ -229,7 +383,7 @@ def create(game):
             tags=["corpse"]
         ),
         "lever": Item(
-            game=game,
+            slug="lever",
             name=text_style['item']("lever"),
             long_name=f"a {text_style['item']('lever')} jutting from the cliff side",
             desc=text_style['desc'](
@@ -237,7 +391,7 @@ def create(game):
             )
         ),
         "matchbook": Item(
-            game=game,
+            slug="matchbook",
             name=text_style['item']("matchbook"),
             long_name=f"a {text_style['item']('matchbook')}",
             desc=text_style['desc'](
@@ -248,7 +402,7 @@ def create(game):
             tags=["obtainable"]
         ),
         "rope": Item(
-            game=game,
+            slug="rope",
             name=text_style['item']("rope"),
             long_name=f"some {text_style['item']('rope')}",
             desc=text_style['desc']("Good, sturdy rope, about 50 feet long."),
@@ -258,9 +412,8 @@ def create(game):
     }
 
     # Declare the rooms
-    room = {
+    state["room"] = {
         "outside": Room(
-            game=game,
             slug="outside",
             name="Outside Cave Entrance",
             desc=text_style['desc'](
@@ -269,17 +422,15 @@ def create(game):
             no_mobs=True,
         ),
         "foyer": Room(
-            game=game,
             slug="foyer",
             name="Foyer",
             desc=text_style['desc'](
                 f"Dim light filters in from the {text_style['dir_in_desc']('south')}. Dusty passages "
                 f"run {text_style['dir_in_desc']('north')} and {text_style['dir_in_desc']('east')}."
             ),
-            init_items=[item["sword"]],
+            init_items=[state["item"]["sword"]],
         ),
         "overlook": Room(
-            game=game,
             slug="overlook",
             name="Grand Overlook",
             desc=text_style['desc'](
@@ -287,10 +438,9 @@ def create(game):
                 f"{text_style['dir_in_desc']('north')}, a lightflickers in the distance, but there is no way across "
                 f"the chasm. A passage leads {text_style['dir_in_desc']('south')},away from the cliff."
             ),
-            init_items=[item["rope"]],
+            init_items=[state["item"]["rope"]],
         ),
         "narrow": Room(
-            game=game,
             slug="narrow",
             name="Narrow Passage",
             desc=text_style['desc'](
@@ -299,17 +449,15 @@ def create(game):
             ),
         ),
         "treasure": Room(
-            game=game,
             slug="treasure",
             name="Treasure Chamber",
             desc=text_style['desc'](
                 f"You've found the long-lost treasure chamber! Sadly, it has already been completely emptied "
                 f"byearlier adventurers. The only exit is to the {text_style['dir_in_desc']('south')}."
             ),
-            init_items=[item["lantern"]],
+            init_items=[state["item"]["lantern"]],
         ),
         "chasm": Room(
-            game=game,
             slug="chasm",
             name="Over The Edge",
             desc=text_style['desc'](
@@ -325,10 +473,9 @@ def create(game):
             ),
             no_mobs=True,
             no_drop=True,
-            init_items=[item["lever"]]
+            init_items=[state["item"]["lever"]]
         ),
         "final": Room(
-            game=game,
             slug="final",
             name="Across the Chasm",
             desc=text_style['desc'](
@@ -337,14 +484,14 @@ def create(game):
                 f"{text_style['item_in_desc']('Amulet of Yendor')}.To the {text_style['dir_in_desc']('south')}, a "
                 f"bridge leads back the way you came."
             ),
-            init_items=[item["amulet_of_yendor"]]
+            init_items=[state["item"]["amulet_of_yendor"]]
         ),
     }
 
     # Declare the mobs
-    mob = {
-        "goblin": Mob(
-            game=game,
+    mob_types = {
+        "goblin": lambda mob_id: Mob(
+            mob_id=mob_id,
             name=text_style['mob']("goblin"),
             long_name=f"a {text_style['mob']('goblin')}",
             desc=text_style['desc'](
@@ -397,181 +544,57 @@ def create(game):
                 "accuracy": .75,
                 "evasion": .15
             },
-            init_loc=room["foyer"],
+            init_loc=state["room"]["foyer"],
             init_att="neutral",
-            items=([item["goblin_corpse"]])
+            items=([state["item"]["goblin_corpse"]])
         )
     }
-
-    # Declare the player
-    player = Player(game=game, init_loc=room["outside"], init_items=[item["cheese"]])
+    state["mobs"] = [mob_types["goblin"](1)]
 
     # Link rooms together
-    room["outside"].n_to = (room["foyer"], "You step into the mouth of the cave.")
-    room["foyer"].s_to = (room["outside"], "You head south, and find yourself outside the cave.")
-    room["foyer"].n_to = (
-        room["overlook"],
+    state["room"]["outside"].n_to = (state["room"]["foyer"], "You step into the mouth of the cave.")
+    state["room"]["foyer"].s_to = (state["room"]["outside"], "You head south, and find yourself outside the cave.")
+    state["room"]["foyer"].n_to = (
+        state["room"]["overlook"],
         "You make your way north, and the cave opens up suddenly, revealing a vast chasm before you."
     )
-    room["foyer"].e_to = (
-        room["narrow"],
+    state["room"]["foyer"].e_to = (
+        state["room"]["narrow"],
         "You take the eastern passage. It grows narrower until you have a hard time standing straight."
     )
-    room["overlook"].s_to = (room["foyer"], "You step back from the cliff's edge and head south.")
-    room["overlook"].n_to = (
-        room["overlook"],
+    state["room"]["overlook"].s_to = (state["room"]["foyer"], "You step back from the cliff's edge and head south.")
+    state["room"]["overlook"].n_to = (
+        state["room"]["overlook"],
         "You take a step back, and get ready to jump over the gap. Then you realize that is "
-        f"anincredibly stupid idea, and decide you would rather live."
+        f"an incredibly stupid idea, and decide you would rather live."
     )
-    room["narrow"].w_to = (room["foyer"], "You move west through the cramped passage until it opens up a bit.")
-    room["narrow"].n_to = (room["treasure"], "You follow your nose and head north.")
-    room["treasure"].s_to = (room["narrow"], "You head south into the narrow passage.")
-    room["chasm"].u_to = (
-        room["overlook"],
+    state["room"]["narrow"].w_to = (
+        state["room"]["foyer"],
+        "You move west through the cramped passage until it opens up a bit."
+    )
+    state["room"]["narrow"].n_to = (
+        state["room"]["treasure"],
+        "You follow your nose and head north."
+    )
+    state["room"]["treasure"].s_to = (state["room"]["narrow"], "You head south into the narrow passage.")
+    state["room"]["chasm"].u_to = (
+        state["room"]["overlook"],
         "You climb slowly back up the rope, and pull yourself back onto the overlook, panting."
     )
-    room["final"].s_to = (room["overlook"], "You go back across the bridge, resisting the pull of the amulet.")
+    state["room"]["final"].s_to = (
+        state["room"]["overlook"],
+        "You go back across the bridge, resisting the pull of the amulet."
+    )
+
+    # Set initial room
+    state["player"].loc = state["room"]["outside"]
 
     # Add functionality to items
+    state["item"]["sword"].use = use_sword
+    state["item"]["rope"].use = use_rope
+    state["item"]["lantern"].use = use_lantern
+    state["item"]["matchbook"].use = use_matchbook
+    state["item"]["goblin_corpse"].on_look = on_look_goblin_corpse
+    state["item"]["lever"].use_from_env = use_from_env_lever
 
-    # sword
-    def use_sword():
-        if player.loc.no_drop:
-            player.game.display.print(
-                f"This isn't a great place to mess around with your {text_style['item']('sword')}. You leave it be.")
-            return False
-        else:
-            player.game.display.print(
-                f"You swing the {text_style['item']('sword')} around wildly. After a few wide arcs, it slips out of "
-                f"your fingers and clatters to the ground.\n"
-            )
-            player.drop_item(item["sword"], quiet=True)
-
-        return True
-
-    item["sword"].use = use_sword
-
-    # rope
-    def use_rope():
-        if player.loc == room["overlook"]:
-            player.game.display.print(
-                f"You tie off one end of the {text_style['item']('rope')} to a convenient stalagmite "
-                f"and drop the rest off the cliff.\n"
-            )
-
-            # remove from inventory
-            player.drop_item(item["rope"], quiet=True)
-
-            # modify the room
-            room["overlook"].desc = text_style['desc'](
-                f"A steep cliff appears before you, falling into the darkness. Ahead to the "
-                f"{text_style['dir_in_desc']('north')}, a lightflickers in the distance, but there is no way "
-                f"across the chasm. A passage leads {text_style['dir_in_desc']('south')},away from the cliff. A "
-                f"tied off rope offers a way {text_style['dir_in_desc']('down')}."
-            )
-            room["overlook"].d_to = (
-                room["chasm"],
-                "You climb down the rope, and make it about a third of the waydown the cliff before you reach "
-                f"the end of the line. Oh dear.",
-            )
-
-            # modify the item
-            item["rope"].long_name = f"a tied off length of {text_style['item']('rope')}"
-            item["rope"].desc = text_style['desc'](
-                "The rope looks pretty sturdy. It will probably hold your weight. Probably."
-            )
-            item["rope"].tags.remove("obtainable")
-
-            def use_from_env_rope():
-                player.move("d")
-                return True
-
-            item["rope"].use_from_env = use_from_env_rope
-
-        else:
-            player.game.display.print(
-                f"You try to use the {text_style['item']('rope')} as a lasso, and fail miserably."
-            )
-
-        return True
-
-    item["rope"].use = use_rope
-
-    # lantern
-    def use_lantern():
-        if item["matchbook"] in player.items:
-            if item["lantern"].lit:
-                player.game.display.print(f"The lantern is already lit.\n")
-                return False
-            else:
-                item["lantern"].lit = True
-                item["lantern"].long_name = f"a lit {text_style['item']('lantern')}"
-                item["lantern"].desc = f"The {text_style['item']('lantern')} is giving off a warm glow."
-                player.game.display.print(f"You strike a match and light the lantern. The room brightens.\n")
-                return True
-        else:
-            player.game.display.print("You don't have anything to light it with.")
-            return False
-
-    item["lantern"].use = use_lantern
-
-    # matchbook
-    def use_matchbook():
-        if item["lantern"] in player.items:
-            if item["lantern"].lit:
-                player.game.display.print(f"The lantern is already lit.\n")
-                return False
-            else:
-                item["lantern"].lit = True
-                player.game.display.print(f"You strike a match and light the lantern. The room brightens.\n")
-                return True
-        else:
-            player.game.display.print("You don't have anything you want to light on fire.\n")
-            return False
-
-    item["matchbook"].use = use_matchbook
-
-    # goblin_corpse
-    def on_look_goblin_corpse():
-        item["goblin_corpse"].desc = "It's a dead goblin. You don't want to touch it again."
-        player.loc.add_item(item["matchbook"])
-        delattr(item["goblin_corpse"], "on_look")
-
-    item["goblin_corpse"].on_look = on_look_goblin_corpse
-
-    # lever
-    def use_from_env_lever():
-        if player.light_check():
-            player.game.display.print(
-                "You pull the lever. A loud rinding noise echoes through the chasm. You nearly lose your grip "
-                f"but manage to hold on as a bridge lowers from the ceiling of the cave, shuddering into place above "
-                f"you. Looks like you can cross the chasm now. What are the odds that lever would be in this "
-                f"exact place on the cliff side?\n"
-            )
-            room["overlook"].desc = text_style['desc'](
-                f"A steep cliff appears before you, falling into the darkness. Ahead to the "
-                f"{text_style['dir_in_desc']('north')}, a narrow bridge has been lowered, leading to a light "
-                f"flickering in the distance. A passage leads {text_style['dir_in_desc']('south')}, away from the "
-                f"cliff. A tied off rope offers a way {text_style['dir_in_desc']('down')}."
-            )
-            room["overlook"].n_to = (
-                room["final"],
-                "You carefully walk across the bridge, heading towards the light on the other side."
-            )
-            return True
-        else:
-            player.game.display.print(
-                f"It's too dark for that right now. Also, how do you know about "
-                f"the {text_style['item']('lever')}, cheater?\n"
-            )
-            return False
-
-    item["lever"].use_from_env = use_from_env_lever
-
-    return {
-        "item": item,
-        "room": room,
-        "mob": mob,
-        "player": player,
-        "action": action
-    }
+    return state

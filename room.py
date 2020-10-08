@@ -2,10 +2,9 @@ from constants import half_space
 
 
 class Room:
-    def __init__(self, game, slug, name, desc, dark=False, dark_desc="", no_mobs=False, no_drop=False, init_items=None):
+    def __init__(self, slug, name, desc, dark=False, dark_desc="", no_mobs=False, no_drop=False, init_items=None):
         if init_items is None:
             init_items = []
-        self.game = game
         self.slug = slug
         self.name = name
         self.desc = desc
@@ -25,9 +24,15 @@ class Room:
         if item in self.items:
             if "obtainable" in item.tags:
                 self.items.remove(item)
-                return True
+                return {
+                    "success": True
+                }
             else:
-                self.game.display.print_text("You decide to leave it there." + half_space)
-                return False
+                return {
+                    "print_text": "You decide to leave it there." + half_space,
+                    "success": False
+                }
         else:
-            return False
+            return {
+                "success": False
+            }
